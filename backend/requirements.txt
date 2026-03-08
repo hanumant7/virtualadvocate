@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+requests
+python-dotenv
+python-multipart
+transformers
+torch
+sentencepiece
+google-genai
+langdetect
