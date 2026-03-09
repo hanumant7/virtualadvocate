@@ -1,1 +1,13 @@
 /.DS_Store
+backend/.env
+backend/.DS_Store
+backend/__pycache__/main.cpython-314.pyc
+backend/services/.DS_Store
+backend/services/__pycache__/analyzer.cpython-314.pyc
+backend/services/__pycache__/nlp.cpython-314.pyc
+backend/services/__pycache__/localTranslator.cpython-314.pyc
+backend/services/__pycache__/legalLogic.cpython-314.pyc
+backend/services/__pycache__/aiIpcPredictor.cpython-314.pyc
+backend/services/__pycache__/gemini_service.cpython-314.pyc
+backend/services/__pycache__/ipcDatabase.cpython-314.pyc
+backend/services/__pycache__/ipcMapper.cpython-314.pyc
