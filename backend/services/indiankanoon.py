@@ -1,6 +1,7 @@
 import requests
 from config import INDIANKANOON_API_KEY
 
+
 def search_cases(query, skip_first=False):
 
     if not query:
@@ -18,8 +19,15 @@ def search_cases(query, skip_first=False):
     }
 
     try:
-        response = requests.post(url, headers=headers, data=params)
         print("Indian Kanoon Query:", query)
+
+        response = requests.post(
+            url,
+            headers=headers,
+            data=params,
+            timeout=10
+        )
+
         print("Response Status:", response.status_code)
 
         if response.status_code != 200:
@@ -36,6 +44,7 @@ def search_cases(query, skip_first=False):
         results = []
 
         for doc in docs[:5]:
+
             title = doc.get("title", "Untitled Case")
             doc_id = doc.get("tid")
 
@@ -48,6 +57,10 @@ def search_cases(query, skip_first=False):
         print("Judgments Found:", len(results))
 
         return results
+
+    except requests.exceptions.Timeout:
+        print("Indian Kanoon API Timeout")
+        return []
 
     except Exception as e:
         print("Indian Kanoon Error:", str(e))
