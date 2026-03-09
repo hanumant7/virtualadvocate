@@ -2,49 +2,63 @@ import json
 import re
 from services.gemini_service import generate_ai_guidance
 
+
+def extract_json(text):
+
+    if not text:
+        return None
+
+    # If Gemini already returned JSON (dict), just return it
+    if isinstance(text, dict):
+        return text
+
+    # If response is string, try extracting JSON
+    if isinstance(text, str):
+
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if not match:
+            return None
+
+        cleaned = match.group(0)
+
+        cleaned = re.sub(r",\s*}", "}", cleaned)
+        cleaned = re.sub(r",\s*]", "]", cleaned)
+
+        try:
+            return json.loads(cleaned)
+        except Exception:
+            return None
+
+    return None
+
+
 def generate_legal_guidance(data: dict):
+
     category = data.get("category")
     issue = data.get("issue")
 
-    # ----------------------------------------
-    # 1️⃣ TRY AI FIRST
-    # ----------------------------------------
-
     ai_response = generate_ai_guidance(category, issue)
 
-    if ai_response and "Unable to generate" not in ai_response:
-        try:
-            # Remove markdown code block formatting if present
-            cleaned = re.sub(r"```json|```", "", ai_response).strip()
+    parsed = extract_json(ai_response)
 
-            # Convert string JSON to Python dictionary
-            parsed_response = json.loads(cleaned)
-
-            return parsed_response
-
-        except Exception:
-            # If parsing fails, continue to fallback
-            pass
-
-    # ----------------------------------------
-    # 2️⃣ RULE-BASED FALLBACK
-    # ----------------------------------------
+    if parsed:
+        return parsed
 
     if category == "Criminal":
         return {
-            "law": "Indian Penal Code (IPC) / Bharatiya Nyaya Sanhita (BNS)",
+            "law": "Indian Penal Code / Bharatiya Nyaya Sanhita",
             "advice": "This issue appears to involve a criminal offence.",
             "procedure": [
-                "File an FIR at the nearest police station",
-                "Preserve all evidence",
-                "Consult a criminal lawyer"
+                "File FIR at nearest police station",
+                "Preserve evidence",
+                "Consult criminal lawyer"
             ],
-            "note": "Criminal cases involve offences against the State."
+            "note": "Criminal offences are prosecuted by the State."
         }
 
     if category == "Civil":
         return {
-            "law": "Code of Civil Procedure (CPC), 1908",
+            "law": "Code of Civil Procedure",
             "advice": "This appears to be a civil dispute.",
             "procedure": [
                 "Collect documents",
@@ -56,29 +70,29 @@ def generate_legal_guidance(data: dict):
 
     if category == "Family":
         return {
-            "law": "Family Laws (HMA / CrPC / DV Act)",
-            "advice": "This appears to be a family-related dispute.",
+            "law": "Family Laws (HMA / DV Act / CrPC)",
+            "advice": "This appears to be a family dispute.",
             "procedure": [
                 "Approach family court",
                 "Consider mediation"
             ],
-            "note": "Family courts encourage settlement."
+            "note": "Family courts often encourage settlement."
         }
 
     if category == "Consumer":
         return {
-            "law": "Consumer Protection Act, 2019",
-            "advice": "This appears to be a consumer dispute.",
+            "law": "Consumer Protection Act 2019",
+            "advice": "This appears to be a consumer complaint.",
             "procedure": [
-                "Collect receipts",
+                "Collect bills and receipts",
                 "File complaint in Consumer Commission"
             ],
-            "note": "Lawyer not mandatory in consumer courts."
+            "note": "Lawyer is not mandatory in consumer courts."
         }
 
     return {
         "law": "General Legal Guidance",
-        "advice": "More information is required.",
+        "advice": "More information required.",
         "procedure": ["Consult a lawyer"],
-        "note": "This guidance is general in nature."
+        "note": "Information provided is general."
     }

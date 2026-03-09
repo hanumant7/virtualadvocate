@@ -1,14 +1,11 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import torch
 from langdetect import detect
+import torch
 
 MODEL_NAME = "facebook/nllb-200-distilled-600M"
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
-
-model.eval()
-torch.set_grad_enabled(False)
+_tokenizer = None
+_model = None
 
 LANG_MAP = {
     "hi": "hin_Deva",
@@ -16,32 +13,70 @@ LANG_MAP = {
     "en": "eng_Latn"
 }
 
-def translate_to_english(text: str) -> str:
+
+def get_model():
+    global _tokenizer, _model
+
+    if _model is None:
+        _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        _model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+
+        _model.eval()
+        torch.set_grad_enabled(False)
+
+    return _tokenizer, _model
+
+
+def detect_language(text: str):
+
+    try:
+        return detect(text)
+    except:
+        return "en"
+
+
+def translate_to_english(text: str):
+
     if not text:
         return text
 
-    text = text.strip()
-    if len(text) > 600:
-        text = text[:600]
+    text = text.strip()[:600]
 
-    try:
-        lang = detect(text)
-    except:
-        lang = "en"
+    lang = detect_language(text)
 
-    src_lang = LANG_MAP.get(lang, "eng_Latn")
+    if lang == "en":
+        return text
 
-    # ✅ THIS is the fix
-    tokenizer.src_lang = src_lang
+    tokenizer, model = get_model()
+
+    tokenizer.src_lang = LANG_MAP.get(lang, "eng_Latn")
 
     inputs = tokenizer(text, return_tensors="pt", truncation=True)
 
     output = model.generate(
         **inputs,
         forced_bos_token_id=tokenizer.lang_code_to_id["eng_Latn"],
-        max_length=128,
-        num_beams=1,
-        do_sample=False
+        max_length=128
     )
 
-    return tokenizer.batch_decode(output, skip_special_tokens=True)[0].strip()
+    return tokenizer.batch_decode(output, skip_special_tokens=True)[0]
+
+
+def translate_text(text: str, target_lang: str):
+
+    if target_lang == "en":
+        return text
+
+    tokenizer, model = get_model()
+
+    tokenizer.src_lang = "eng_Latn"
+
+    inputs = tokenizer(text, return_tensors="pt", truncation=True)
+
+    output = model.generate(
+        **inputs,
+        forced_bos_token_id=tokenizer.lang_code_to_id[LANG_MAP.get(target_lang, "eng_Latn")],
+        max_length=128
+    )
+
+    return tokenizer.batch_decode(output, skip_special_tokens=True)[0]

@@ -1,12 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
 import re
 
 # ------------------------------
 # INTERNAL SERVICE IMPORTS
 # ------------------------------
+
 from schemas.search import SearchRequest
 from services.analyzer import analyze_case
 from services.indiankanoon import search_cases
@@ -16,6 +16,7 @@ from services.gemini_service import generate_reply
 # ------------------------------
 # APP INITIALIZATION
 # ------------------------------
+
 app = FastAPI(
     title="Virtual Advocate Backend",
     description="Backend API for Virtual Advocate Legal-Tech Project",
@@ -25,6 +26,7 @@ app = FastAPI(
 # ------------------------------
 # CORS CONFIGURATION
 # ------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -40,6 +42,7 @@ class ChatRequest(BaseModel):
     message: str
     user_id: str
 
+
 class UserSignUp(BaseModel):
     name: str
     age: int
@@ -49,38 +52,44 @@ class UserSignUp(BaseModel):
     password: str
     confirm_password: str
 
+
 class UserLogin(BaseModel):
     email: str
     password: str
+
 
 class AdviceRequest(BaseModel):
     case_type: str
     description: str
 
-# =========================================================
-# ===================== CHAT ENDPOINTS ====================
-# =========================================================
 
-import json
+# =========================================================
+# ===================== CHAT ENDPOINT =====================
+# =========================================================
 
 @app.post("/chat")
 def gemini_chat(data: ChatRequest):
+    """
+    Chatbot endpoint used by Chatbot.jsx
+    """
+
     try:
-        raw_reply = generate_reply(data.message)
-        cleaned = raw_reply.strip().replace("```json", "").replace("```", "")
-        structured = json.loads(cleaned)
+
+        structured_reply = generate_reply(data.message)
 
         return {
             "type": "structured",
-            "content": structured
+            "content": structured_reply
         }
 
-    except Exception:
+    except Exception as e:
+
+        print("Chat error:", e)
+
         return {
             "type": "text",
-            "content": "Unable to process request."
+            "content": "Unable to process the request right now."
         }
-
 
 
 # =========================================================
@@ -90,12 +99,14 @@ def gemini_chat(data: ChatRequest):
 @app.post("/analyze")
 def analyze(request: SearchRequest):
     """
-    Unified analysis endpoint:
-    - Auto-translate (Hindi/Marathi → English)
-    - NLP classification
-    - IPC + BNS mapping
-    - Legal guidance
-    - Related judgments
+    Unified analysis endpoint
+
+    Steps:
+    1️⃣ Translate user query to English
+    2️⃣ Run legal classification
+    3️⃣ Detect IPC/BNS sections
+    4️⃣ Generate legal guidance
+    5️⃣ Fetch related judgments
     """
 
     original_issue = request.issue
@@ -103,22 +114,25 @@ def analyze(request: SearchRequest):
     try:
         processed_issue = translate_to_english(original_issue)
     except Exception:
-        processed_issue = original_issue  # fail-safe
+        processed_issue = original_issue
 
     return analyze_case({
         "issue": processed_issue,
         "original_issue": original_issue
     })
 
+
 # =========================================================
-# ========== OPTIONAL: JUDGMENT-ONLY SEARCH ===============
+# ================= LEGAL SEARCH ENDPOINT =================
 # =========================================================
 
 @app.post("/legal-search")
 def legal_search(request: SearchRequest):
+
     return {
         "judgments": search_cases(request.issue)
     }
+
 
 # =========================================================
 # ===================== FILE UPLOAD =======================
@@ -130,12 +144,14 @@ async def submit_advice(
     description: str,
     file: UploadFile = File(None)
 ):
+
     return {
         "status": "success",
         "case_type": case_type,
         "description": description,
         "file_received": file.filename if file else "No file uploaded"
     }
+
 
 # =========================================================
 # ===================== AUTH ENDPOINTS ====================
@@ -165,7 +181,9 @@ def register_user(user: UserSignUp):
     if user.password != user.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
 
-    return {"message": f"Account created for {user.name} successfully"}
+    return {
+        "message": f"Account created for {user.name} successfully"
+    }
 
 
 @app.post("/login")
@@ -182,10 +200,14 @@ def login_user(user: UserLogin):
         "user_email": user.email
     }
 
+
 # =========================================================
-# ===================== ROOT CHECK ========================
+# ===================== ROOT ENDPOINT =====================
 # =========================================================
 
 @app.get("/")
 def root():
-    return {"status": "Virtual Advocate Backend is running (v2.0)"}
+
+    return {
+        "status": "Virtual Advocate Backend is running (v2.0)"
+    }
