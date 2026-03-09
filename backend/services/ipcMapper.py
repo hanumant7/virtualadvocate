@@ -2,28 +2,16 @@ import re
 from services.aiIpcPredictor import map_sections
 from services.ipcDatabase import IPC_DATABASE
 
-
-# =========================================================
 # HELPER
-# =========================================================
-
 def keyword_match(text, keywords):
     for word in keywords:
         if re.search(rf"\b{re.escape(word)}\b", text):
             return True
     return False
 
-
-# =========================================================
 # RULE-BASED CRIME DETECTION
-# =========================================================
-
 CRIME_RULES = {
-
-# -------------------------------
 # MURDER
-# -------------------------------
-
 "murder": {
 "keywords":{
 "en":["murder","killed","kill","homicide"],
@@ -34,10 +22,7 @@ CRIME_RULES = {
 "confidence":"High"
 },
 
-# -------------------------------
 # ATTEMPT MURDER
-# -------------------------------
-
 "attempt_murder":{
 "keywords":{
 "en":["attempt to kill","tried to kill"],
@@ -48,10 +33,7 @@ CRIME_RULES = {
 "confidence":"High"
 },
 
-# -------------------------------
 # HURT / ASSAULT
-# -------------------------------
-
 "hurt":{
 "keywords":{
 "en":["hit","hurt","beaten","injured"],
@@ -62,10 +44,7 @@ CRIME_RULES = {
 "confidence":"Medium"
 },
 
-# -------------------------------
 # SEXUAL CRIMES
-# -------------------------------
-
 "rape":{
 "keywords":{
 "en":["rape","raped"],
@@ -96,10 +75,7 @@ CRIME_RULES = {
 "confidence":"Medium"
 },
 
-# -------------------------------
 # THEFT / ROBBERY
-# -------------------------------
-
 "theft":{
 "keywords":{
 "en":["theft","stole","stealing"],
@@ -130,10 +106,7 @@ CRIME_RULES = {
 "confidence":"High"
 },
 
-# -------------------------------
 # FRAUD / CHEATING
-# -------------------------------
-
 "cheating":{
 "keywords":{
 "en":["cheat","fraud","scam"],
@@ -154,10 +127,7 @@ CRIME_RULES = {
 "confidence":"Medium"
 },
 
-# -------------------------------
 # FAMILY CRIMES
-# -------------------------------
-
 "domestic_violence":{
 "keywords":{
 "en":["domestic violence","husband beat"],
@@ -178,10 +148,7 @@ CRIME_RULES = {
 "confidence":"High"
 },
 
-# -------------------------------
 # THREATS
-# -------------------------------
-
 "criminal_intimidation":{
 "keywords":{
 "en":["threat","threatened","kill threat"],
@@ -192,10 +159,7 @@ CRIME_RULES = {
 "confidence":"Medium"
 },
 
-# -------------------------------
 # WOMEN PROTECTION
-# -------------------------------
-
 "insult_modesty":{
 "keywords":{
 "en":["insult modesty","abused woman"],
@@ -209,10 +173,7 @@ CRIME_RULES = {
 }
 
 
-# =========================================================
 # RULE-BASED MAPPER
-# =========================================================
-
 def rule_based_mapping(text):
 
     detected_sections = []
@@ -229,11 +190,7 @@ def rule_based_mapping(text):
 
     return detected_sections, confidence
 
-
-# =========================================================
 # BUILD IPC / BNS OUTPUT
-# =========================================================
-
 def build_output(section_list):
 
     ipc_output = []
@@ -258,25 +215,15 @@ def build_output(section_list):
 
     return ipc_output, bns_output
 
-
-# =========================================================
 # MAIN HYBRID MAPPER
-# =========================================================
-
 def map_statute_sections(original_issue: str, processed_issue: str):
 
     combined_text = f"{original_issue} {processed_issue}".lower()
 
-    # -----------------------------------
     # RULE-BASED DETECTION
-    # -----------------------------------
-
     rule_sections, rule_confidence = rule_based_mapping(combined_text)
 
-    # -----------------------------------
     # AI DETECTION
-    # -----------------------------------
-
     ai_result = map_sections(combined_text)
 
     ai_sections = [
@@ -284,10 +231,7 @@ def map_statute_sections(original_issue: str, processed_issue: str):
         for s in ai_result.get("ipc_sections", [])
     ]
 
-    # -----------------------------------
     # MERGE RESULTS
-    # -----------------------------------
-
     merged_sections = list(set(rule_sections + ai_sections))
 
     if not merged_sections:

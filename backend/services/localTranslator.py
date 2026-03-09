@@ -13,7 +13,6 @@ LANG_MAP = {
     "en": "eng_Latn"
 }
 
-
 def get_model():
     global _tokenizer, _model
 

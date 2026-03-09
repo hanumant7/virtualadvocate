@@ -2,7 +2,6 @@ from transformers import pipeline
 
 _classifier = None
 
-
 def get_classifier():
     global _classifier
 
@@ -14,7 +13,6 @@ def get_classifier():
 
     return _classifier
 
-
 LEGAL_LABELS = [
     "Violent crime such as murder, assault, rape or physical attack",
     "Financial fraud or cheating including scam or money fraud",
@@ -24,7 +22,6 @@ LEGAL_LABELS = [
     "Consumer complaint about product or service",
     "Employment dispute related to job, salary or workplace"
 ]
-
 
 def classify_issue(text: str):
 

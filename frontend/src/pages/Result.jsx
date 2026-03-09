@@ -13,7 +13,6 @@ export default function Result() {
   const issue = location.state?.issue || "";
 
   const judgments = location.state?.related_judgments ?? [];
-  console.log("Result Page State:", location.state);
 
   const ipc_sections = location.state?.ipc_sections || [];
   const bns_sections = location.state?.bns_sections || [];

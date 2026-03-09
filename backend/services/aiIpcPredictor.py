@@ -11,7 +11,6 @@ def extract_sections(text):
 
     return matches
 
-
 def ai_predict_sections(issue_text):
 
     prompt = f"""

@@ -3,30 +3,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import re
 
-# ------------------------------
 # INTERNAL SERVICE IMPORTS
-# ------------------------------
-
 from schemas.search import SearchRequest
 from services.analyzer import analyze_case
 from services.indiankanoon import search_cases
 from services.localTranslator import translate_to_english
 from services.gemini_service import generate_reply
 
-# ------------------------------
 # APP INITIALIZATION
-# ------------------------------
-
 app = FastAPI(
     title="Virtual Advocate Backend",
     description="Backend API for Virtual Advocate Legal-Tech Project",
     version="2.0"
 )
 
-# ------------------------------
 # CORS CONFIGURATION
-# ------------------------------
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -34,14 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =========================================================
-# ===================== DATA MODELS =======================
-# =========================================================
-
+# DATA MODELS 
 class ChatRequest(BaseModel):
     message: str
     user_id: str
-
 
 class UserSignUp(BaseModel):
     name: str
@@ -52,21 +39,16 @@ class UserSignUp(BaseModel):
     password: str
     confirm_password: str
 
-
 class UserLogin(BaseModel):
     email: str
     password: str
-
 
 class AdviceRequest(BaseModel):
     case_type: str
     description: str
 
 
-# =========================================================
-# ===================== CHAT ENDPOINT =====================
-# =========================================================
-
+# CHAT ENDPOINT
 @app.post("/chat")
 def gemini_chat(data: ChatRequest):
     """
@@ -91,11 +73,7 @@ def gemini_chat(data: ChatRequest):
             "content": "Unable to process the request right now."
         }
 
-
-# =========================================================
-# ===================== ANALYZER (CORE) ===================
-# =========================================================
-
+#ANALYZER (CORE) 
 @app.post("/analyze")
 def analyze(request: SearchRequest):
     """
@@ -121,11 +99,7 @@ def analyze(request: SearchRequest):
         "original_issue": original_issue
     })
 
-
-# =========================================================
-# ================= LEGAL SEARCH ENDPOINT =================
-# =========================================================
-
+# LEGAL SEARCH ENDPOINT 
 @app.post("/legal-search")
 def legal_search(request: SearchRequest):
 
@@ -133,11 +107,7 @@ def legal_search(request: SearchRequest):
         "judgments": search_cases(request.issue)
     }
 
-
-# =========================================================
-# ===================== FILE UPLOAD =======================
-# =========================================================
-
+# FILE UPLOAD 
 @app.post("/submit-for-advice")
 async def submit_advice(
     case_type: str,
@@ -152,11 +122,7 @@ async def submit_advice(
         "file_received": file.filename if file else "No file uploaded"
     }
 
-
-# =========================================================
-# ===================== AUTH ENDPOINTS ====================
-# =========================================================
-
+# AUTH ENDPOINTS 
 @app.post("/signup")
 def register_user(user: UserSignUp):
 
@@ -185,7 +151,6 @@ def register_user(user: UserSignUp):
         "message": f"Account created for {user.name} successfully"
     }
 
-
 @app.post("/login")
 def login_user(user: UserLogin):
 
@@ -200,11 +165,7 @@ def login_user(user: UserLogin):
         "user_email": user.email
     }
 
-
-# =========================================================
-# ===================== ROOT ENDPOINT =====================
-# =========================================================
-
+# ROOT ENDPOINT 
 @app.get("/")
 def root():
 

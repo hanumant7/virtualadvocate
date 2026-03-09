@@ -4,10 +4,7 @@ from services.ipcMapper import map_statute_sections
 from services.gemini_service import classify_with_ai, DISCLAIMER
 from services.legalLogic import generate_legal_guidance
 
-
-# =========================================================
-# BUILD JUDGMENT QUERY
-# =========================================================
+#BUILD JUDGMENT QUERY
 
 def build_judgment_query(category: str, statute_data: dict, issue_text: str = ""):
 
@@ -34,45 +31,29 @@ def build_judgment_query(category: str, statute_data: dict, issue_text: str = ""
 
     return None, False
 
-
-# =========================================================
-# MAIN ANALYZER
-# =========================================================
-
+#MAIN ANALYZER
 def analyze_case(data: dict):
 
     original_issue = data.get("original_issue", "")
     processed_issue = data.get("issue", "")
 
-    # -----------------------------------------------------
     # STEP 1: CATEGORY DETECTION
-    # -----------------------------------------------------
-
     category, category_confidence = classify_issue(processed_issue)
 
     # fallback to Gemini if ML confidence is low
     if category_confidence < 0.5:
         category, category_confidence = classify_with_ai(processed_issue)
 
-    # -----------------------------------------------------
     # STEP 2: STATUTE MAPPING
-    # -----------------------------------------------------
-
     statute_data = map_statute_sections(original_issue, processed_issue)
 
-    # -----------------------------------------------------
     # STEP 3: LEGAL GUIDANCE (Gemini)
-    # -----------------------------------------------------
-
     legal_guidance = generate_legal_guidance({
         "category": category,
         "issue": processed_issue
     })
 
-    # -----------------------------------------------------
     # STEP 4: JUDGMENT SEARCH
-    # -----------------------------------------------------
-
     query, skip_first = build_judgment_query(
         category,
         statute_data,
@@ -81,10 +62,7 @@ def analyze_case(data: dict):
 
     judgments = search_cases(query, skip_first) if query else []
 
-    # -----------------------------------------------------
     # SAFE CONFIDENCE HANDLING
-    # -----------------------------------------------------
-
     confidence_value = None
 
     if category == "Criminal":
@@ -95,10 +73,7 @@ def analyze_case(data: dict):
         except:
             confidence_value = category_confidence  # e.g. "AI-Detected"
 
-    # -----------------------------------------------------
     # FINAL RESPONSE
-    # -----------------------------------------------------
-
     return {
         "detected_category": category,
 

@@ -2,7 +2,6 @@ import json
 import re
 from services.gemini_service import generate_ai_guidance
 
-
 def extract_json(text):
 
     if not text:

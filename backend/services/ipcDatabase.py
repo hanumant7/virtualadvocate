@@ -1,5 +1,4 @@
 IPC_DATABASE = {
-
 "302": {"title":"Murder","bns":"101"},
 "307": {"title":"Attempt to Murder","bns":"109"},
 "323": {"title":"Voluntarily Causing Hurt","bns":"115"},

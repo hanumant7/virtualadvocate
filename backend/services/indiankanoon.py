@@ -1,7 +1,6 @@
 import requests
 from config import INDIANKANOON_API_KEY
 
-
 def search_cases(query, skip_first=False):
 
     if not query:
