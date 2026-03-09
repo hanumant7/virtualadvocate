@@ -1,11 +1,11 @@
 fastapi
-uvicorn[standard]
+uvicorn
 pydantic
 requests
 python-dotenv
 python-multipart
-transformers
-torch
+transformers==4.38.2
+torch --index-url https://download.pytorch.org/whl/cpu
 sentencepiece
 google-genai
 langdetect
