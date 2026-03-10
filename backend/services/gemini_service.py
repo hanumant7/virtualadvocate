@@ -28,13 +28,22 @@ DISCLAIMER = (
 def ask_gemini(prompt: str):
 
     try:
+
         response = client.models.generate_content(
             model=MODEL_NAME,
             contents=prompt
         )
 
-        if response and response.text:
+        if response is None:
+            return None
+
+        # Standard text response
+        if hasattr(response, "text") and response.text:
             return response.text.strip()
+
+        # fallback extraction
+        if hasattr(response, "candidates"):
+            return response.candidates[0].content.parts[0].text.strip()
 
     except Exception as e:
         print("Gemini API Error:", e)
@@ -46,6 +55,9 @@ def extract_json(text):
 
     if not text:
         return None
+
+    # Remove markdown code blocks
+    text = text.replace("```json", "").replace("```", "")
 
     match = re.search(r"\{.*\}", text, re.DOTALL)
 
@@ -59,7 +71,7 @@ def extract_json(text):
 
     try:
         return json.loads(cleaned)
-    except:
+    except Exception:
         return None
 
 # CHATBOT RESPONSE GENERATOR
@@ -86,14 +98,24 @@ User Query:
 
     response = ask_gemini(prompt)
 
+    if not response:
+        return {
+            "summary": "AI service temporarily unavailable.",
+            "applicable_laws": [],
+            "legal_options": [],
+            "next_steps": [],
+            "note": DISCLAIMER
+        }
+
     parsed = extract_json(response)
 
     if parsed:
         parsed["note"] = DISCLAIMER
         return parsed
 
+    # fallback if JSON parsing fails
     return {
-        "summary": response or "Unable to process request.",
+        "summary": response,
         "applicable_laws": [],
         "legal_options": [],
         "next_steps": [],
@@ -174,6 +196,14 @@ Issue: {issue_text}
 
     response = ask_gemini(prompt)
 
+    if not response:
+        return {
+            "law": "General Indian Law",
+            "advice": "AI service temporarily unavailable.",
+            "procedure": ["Consult a licensed advocate"],
+            "note": DISCLAIMER
+        }
+
     parsed = extract_json(response)
 
     if parsed:
@@ -182,7 +212,7 @@ Issue: {issue_text}
 
     return {
         "law": "General Indian Law",
-        "advice": response or "More information is required.",
+        "advice": response,
         "procedure": ["Consult a licensed advocate"],
         "note": DISCLAIMER
     }
