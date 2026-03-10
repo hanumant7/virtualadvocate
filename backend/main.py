@@ -7,7 +7,7 @@ import re
 from schemas.search import SearchRequest
 from services.analyzer import analyze_case
 from services.indiankanoon import search_cases
-from services.localTranslator import translate_to_english, get_model
+from services.localTranslator import translate_to_english
 from services.gemini_service import generate_reply
 
 # APP INITIALIZATION
@@ -17,13 +17,6 @@ app = FastAPI(
     version="2.0"
 )
 
-# LOAD TRANSLATION MODEL AT STARTUP
-@app.on_event("startup")
-def load_translation_model():
-    print("Initializing NLLB translation model...")
-    get_model()
-    print("NLLB translation model ready")
-
 # CORS CONFIGURATION
 app.add_middleware(
     CORSMiddleware,
@@ -32,7 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# DATA MODELS 
+
+# DATA MODELS
 class ChatRequest(BaseModel):
     message: str
     user_id: str
@@ -80,7 +74,7 @@ def gemini_chat(data: ChatRequest):
             "content": "Unable to process the request right now."
         }
 
-#ANALYZER (CORE) 
+# ANALYZER (CORE)
 @app.post("/analyze")
 def analyze(request: SearchRequest):
     """
@@ -93,39 +87,63 @@ def analyze(request: SearchRequest):
     4️⃣ Generate legal guidance
     5️⃣ Fetch related judgments
     """
+
     print("STEP 1: request received")
+
     original_issue = request.issue
 
+    # Translation step
     try:
         processed_issue = translate_to_english(original_issue)
         print("STEP 2: translation done")
-
-    except Exception:
+    except Exception as e:
+        print("Translation error:", e)
         processed_issue = original_issue
         print("STEP 2: translation skipped")
 
     print("STEP 3: calling analyzer")
-    """return analyze_case({
-        "issue": processed_issue,
-        "original_issue": original_issue
-    })"""
 
-    result = analyze_case({
-        "issue": processed_issue,
-        "original_issue": original_issue
-    })
-    print("STEP 4: analyzer finished")
-    return result
+    try:
+        result = analyze_case({
+            "issue": processed_issue,
+            "original_issue": original_issue
+        })
 
-# LEGAL SEARCH ENDPOINT 
+        print("STEP 4: analyzer finished")
+
+        return result
+
+    except Exception as e:
+
+        print("Analyzer error:", e)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Error processing legal analysis"
+        )
+
+# LEGAL SEARCH ENDPOINT
 @app.post("/legal-search")
 def legal_search(request: SearchRequest):
 
-    return {
-        "judgments": search_cases(request.issue)
-    }
+    try:
 
-# FILE UPLOAD 
+        judgments = search_cases(request.issue)
+
+        return {
+            "judgments": judgments
+        }
+
+    except Exception as e:
+
+        print("Legal search error:", e)
+
+        raise HTTPException(
+            status_code=500,
+            detail="Error fetching judgments"
+        )
+
+# FILE UPLOAD
 @app.post("/submit-for-advice")
 async def submit_advice(
     case_type: str,
@@ -140,7 +158,7 @@ async def submit_advice(
         "file_received": file.filename if file else "No file uploaded"
     }
 
-# AUTH ENDPOINTS 
+# AUTH ENDPOINTS
 @app.post("/signup")
 def register_user(user: UserSignUp):
 
@@ -183,7 +201,7 @@ def login_user(user: UserLogin):
         "user_email": user.email
     }
 
-# ROOT ENDPOINT 
+# ROOT ENDPOINT
 @app.get("/")
 def root():
 
