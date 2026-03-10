@@ -141,7 +141,7 @@ export default function Home() {
     setError("");
 
     try {
-      const response = await fetch("https://virtualadvocate-backend.onrender.com/analyze", {
+      const response = await fetch("https://virtualadvocate-production.up.railway.app/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ issue: issueText }),
@@ -212,3 +212,4 @@ export default function Home() {
   );
 
 }
+
