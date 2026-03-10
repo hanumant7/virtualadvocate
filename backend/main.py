@@ -30,6 +30,7 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     message: str
     user_id: str
+    history: list | None = None
 
 class UserSignUp(BaseModel):
     name: str
@@ -53,17 +54,29 @@ class AdviceRequest(BaseModel):
 @app.post("/chat")
 def gemini_chat(data: ChatRequest):
     """
-    Chatbot endpoint used by Chatbot.jsx
+    Gemini chatbot endpoint
+
+    Supports:
+    - language mirroring
+    - greeting conversation
+    - structured legal responses
+    - conversation context memory
     """
 
     try:
 
-        structured_reply = generate_reply(data.message)
+        print("CHAT MESSAGE:", data.message)
 
-        return {
-            "type": "structured",
-            "content": structured_reply
-        }
+        history = data.history if data.history else []
+
+        reply = generate_reply(
+            user_message=data.message,
+            history=history
+        )
+
+        print("CHAT RESPONSE:", reply)
+
+        return reply
 
     except Exception as e:
 
