@@ -20,7 +20,7 @@ app = FastAPI(
 # CORS CONFIGURATION
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://virtualadvocate.onrender.com"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
