@@ -23,6 +23,9 @@ export default function Chatbot() {
 
   const chatEndRef = useRef(null);
 
+  // ===============================
+  // AUTO SCROLL
+  // ===============================
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
@@ -38,22 +41,23 @@ export default function Chatbot() {
       createConversation();
     }
   }, [location.state]);
-  
-  // HIDE BOTPRESS CHATBOT WIDGET
+
+  // ===============================
+  // HIDE BOTPRESS WIDGET
+  // ===============================
   useEffect(() => {
     const widget = document.querySelector("#bp-web-widget-container, .bpFab");
-  
-    if (widget) {
-      widget.style.display = "none";
-    }
-  
+
+    if (widget) widget.style.display = "none";
+
     return () => {
-      if (widget) {
-        widget.style.display = "block";
-      }
+      if (widget) widget.style.display = "block";
     };
   }, []);
 
+  // ===============================
+  // LOAD MESSAGES FROM FIRESTORE
+  // ===============================
   const loadMessages = async (conversationId) => {
     try {
       const q = query(
@@ -62,7 +66,9 @@ export default function Chatbot() {
       );
 
       const snapshot = await getDocs(q);
+
       const msgs = snapshot.docs.map((doc) => doc.data());
+
       setMessages(msgs);
     } catch (error) {
       console.error("Error loading messages:", error);
@@ -70,7 +76,7 @@ export default function Chatbot() {
   };
 
   // ===============================
-  // CREATE NEW CONVERSATION
+  // CREATE CONVERSATION
   // ===============================
   const createConversation = async () => {
     const user = auth.currentUser;
@@ -95,6 +101,7 @@ export default function Chatbot() {
       };
 
       setMessages([welcomeMessage]);
+
       await addDoc(
         collection(db, "conversations", docRef.id, "messages"),
         {
@@ -113,18 +120,35 @@ export default function Chatbot() {
   const saveMessage = async (sender, text) => {
     if (!conversationId) return;
 
-    await addDoc(
-      collection(db, "conversations", conversationId, "messages"),
-      {
-        sender,
-        text,
-        timestamp: serverTimestamp(),
-      }
-    );
+    try {
+      await addDoc(
+        collection(db, "conversations", conversationId, "messages"),
+        {
+          sender,
+          text,
+          timestamp: serverTimestamp(),
+        }
+      );
 
-    await updateDoc(doc(db, "conversations", conversationId), {
-      lastUpdated: serverTimestamp(),
-    });
+      await updateDoc(doc(db, "conversations", conversationId), {
+        lastUpdated: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+  };
+
+  // ===============================
+  // BUILD CONTEXT HISTORY
+  // ===============================
+  const buildHistory = (msgs) => {
+    return msgs.slice(-12).map((m) => ({
+      role: m.sender === "user" ? "user" : "assistant",
+      content:
+        m.text?.type === "structured"
+          ? JSON.stringify(m.text.content)
+          : m.text?.content,
+    }));
   };
 
   // ===============================
@@ -143,32 +167,32 @@ export default function Chatbot() {
       content: userMessage,
     };
 
-    setMessages((prev) => [
-      ...prev,
+    // UPDATED MESSAGES (fix async bug)
+    const updatedMessages = [
+      ...messages,
       { sender: "user", text: userPayload },
-    ]);
+    ];
 
+    setMessages(updatedMessages);
     setInput("");
     setIsTyping(true);
 
     await saveMessage("user", userPayload);
 
     try {
-      const response = await fetch("https://virtualadvocate-production.up.railway.app/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userMessage,
-          user_id: user.uid,
-          history: messages.slice(-6).map((m) => ({
-            role: m.sender === "user" ? "user" : "assistant",
-            content:
-              m.text?.type === "structured"
-                ? m.text.content.summary
-                : m.text?.content,
-          })),
-        }),
-      });
+      const response = await fetch(
+        "https://virtualadvocate-production.up.railway.app/chat",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+
+          body: JSON.stringify({
+            message: userMessage,
+            user_id: user.uid,
+            history: buildHistory(updatedMessages),
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -180,10 +204,12 @@ export default function Chatbot() {
               content: "I am unable to process that right now.",
             };
 
-      setMessages((prev) => [
-        ...prev,
+      const finalMessages = [
+        ...updatedMessages,
         { sender: "bot", text: botReply },
-      ]);
+      ];
+
+      setMessages(finalMessages);
 
       await saveMessage("bot", botReply);
     } catch (error) {
@@ -242,7 +268,9 @@ export default function Chatbot() {
 
                       {msg.text.content.applicable_laws?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2">Applicable Laws:</p>
+                          <p className="font-semibold mt-2">
+                            Applicable Laws:
+                          </p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.applicable_laws.map((law, i) => (
                               <li key={i}>{law}</li>
@@ -253,7 +281,9 @@ export default function Chatbot() {
 
                       {msg.text.content.legal_options?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2">Legal Options:</p>
+                          <p className="font-semibold mt-2">
+                            Legal Options:
+                          </p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.legal_options.map((opt, i) => (
                               <li key={i}>{opt}</li>
@@ -264,7 +294,9 @@ export default function Chatbot() {
 
                       {msg.text.content.next_steps?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2">Next Steps:</p>
+                          <p className="font-semibold mt-2">
+                            Next Steps:
+                          </p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.next_steps.map((step, i) => (
                               <li key={i}>{step}</li>
@@ -284,7 +316,12 @@ export default function Chatbot() {
               </div>
             ))}
 
-            {isTyping && (<div className="text-sm italic text-gray-600">Virtual Advocate is thinking...</div>)}
+            {isTyping && (
+              <div className="text-sm italic text-gray-600">
+                Virtual Advocate is thinking...
+              </div>
+            )}
+
             <div ref={chatEndRef} />
           </div>
 
@@ -316,6 +353,4 @@ export default function Chatbot() {
       </div>
     </div>
   );
-
 }
-
