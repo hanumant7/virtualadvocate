@@ -2,7 +2,7 @@ import os
 import re
 import json
 from dotenv import load_dotenv
-from google import genai
+from google.genai import Client
 
 # ENVIRONMENT CONFIG
 load_dotenv()
@@ -12,7 +12,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY not found in environment variables")
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = Client(api_key=GEMINI_API_KEY)
 
 MODEL_NAME = "gemini-2.5-flash"
 
