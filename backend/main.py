@@ -56,21 +56,30 @@ def gemini_chat(data: ChatRequest):
     """
     Gemini chatbot endpoint
 
-    Supports:
-    - language mirroring
-    - greeting conversation
+    Features:
+    - conversation memory
     - structured legal responses
-    - conversation context memory
+    - greeting conversation
+    - language mirroring
     """
 
     try:
 
-        print("CHAT MESSAGE:", data.message)
+        message = data.message.strip()
 
-        history = data.history if data.history else []
+        if not message:
+            return {
+                "type": "text",
+                "content": "Please enter a message."
+            }
+
+        history = data.history[-12:] if data.history else []
+
+        print("CHAT MESSAGE:", message)
+        print("History messages:", len(history))
 
         reply = generate_reply(
-            user_message=data.message,
+            user_message=message,
             history=history
         )
 
