@@ -8,7 +8,7 @@ def get_classifier():
     if _classifier is None:
         _classifier = pipeline(
             "zero-shot-classification",
-            model="facebook/bart-large-mnli"
+            model="typeform/distilbert-base-uncased-mnli"
         )
 
     return _classifier
