@@ -7,7 +7,7 @@ import re
 from schemas.search import SearchRequest
 from services.analyzer import analyze_case
 from services.indiankanoon import search_cases
-from services.localTranslator import translate_to_english
+from services.localTranslator import translate_to_english, get_model
 from services.gemini_service import generate_reply
 
 # APP INITIALIZATION
@@ -16,6 +16,13 @@ app = FastAPI(
     description="Backend API for Virtual Advocate Legal-Tech Project",
     version="2.0"
 )
+
+# LOAD TRANSLATION MODEL AT STARTUP
+@app.on_event("startup")
+def load_translation_model():
+    print("Initializing NLLB translation model...")
+    get_model()
+    print("NLLB translation model ready")
 
 # CORS CONFIGURATION
 app.add_middleware(
