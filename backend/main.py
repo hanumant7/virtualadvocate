@@ -86,18 +86,29 @@ def analyze(request: SearchRequest):
     4️⃣ Generate legal guidance
     5️⃣ Fetch related judgments
     """
-
+    print("STEP 1: request received")
     original_issue = request.issue
 
     try:
         processed_issue = translate_to_english(original_issue)
+        print("STEP 2: translation done")
+
     except Exception:
         processed_issue = original_issue
+        print("STEP 2: translation skipped")
 
-    return analyze_case({
+    print("STEP 3: calling analyzer")
+    """return analyze_case({
+        "issue": processed_issue,
+        "original_issue": original_issue
+    })"""
+
+    result = analyze_case({
         "issue": processed_issue,
         "original_issue": original_issue
     })
+    print("STEP 4: analyzer finished")
+    return result
 
 # LEGAL SEARCH ENDPOINT 
 @app.post("/legal-search")
