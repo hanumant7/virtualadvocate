@@ -75,24 +75,40 @@ def extract_json(text):
         return None
 
 # CHATBOT RESPONSE GENERATOR
-def generate_reply(user_message: str):
+def generate_reply(user_message: str, history=None):
+
+    history_text = ""
+
+    if history:
+        for msg in history[-5:]:
+            role = msg.get("role")
+            content = msg.get("content")
+            history_text += f"{role}: {content}\n"
 
     prompt = f"""
 You are Virtual Advocate AI, an Indian legal information assistant.
 
-Respond ONLY in valid JSON.
+IMPORTANT RULES:
 
-JSON FORMAT:
+1. Respond in the SAME language as the user's message.
+2. If the user sends a greeting or casual message
+   (hello, hi, good morning, thank you, etc),
+   reply normally in text.
+3. If the user asks a legal question, respond ONLY in JSON.
+
+LEGAL RESPONSE JSON FORMAT:
 
 {{
 "summary":"",
 "applicable_laws":[],
 "legal_options":[],
-"next_steps":[],
-"note":""
+"next_steps":[]
 }}
 
-User Query:
+Conversation history:
+{history_text}
+
+User message:
 {user_message}
 """
 
@@ -100,26 +116,22 @@ User Query:
 
     if not response:
         return {
-            "summary": "AI service temporarily unavailable.",
-            "applicable_laws": [],
-            "legal_options": [],
-            "next_steps": [],
-            "note": DISCLAIMER
+            "type": "text",
+            "content": "AI service temporarily unavailable."
         }
 
     parsed = extract_json(response)
 
     if parsed:
         parsed["note"] = DISCLAIMER
-        return parsed
+        return {
+            "type": "structured",
+            "content": parsed
+        }
 
-    # fallback if JSON parsing fails
     return {
-        "summary": response,
-        "applicable_laws": [],
-        "legal_options": [],
-        "next_steps": [],
-        "note": DISCLAIMER
+        "type": "text",
+        "content": response
     }
 
 # AI LEGAL CATEGORY CLASSIFIER
