@@ -3,7 +3,7 @@ from langdetect import detect
 import torch
 
 # MODEL CONFIGURATION
-MODEL_NAME = "facebook/nllb-200-distilled-300M"
+MODEL_NAME = "facebook/nllb-200-distilled-600M"
 
 _tokenizer = None
 _model = None
