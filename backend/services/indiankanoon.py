@@ -43,7 +43,7 @@ def search_cases(query, skip_first=False):
 
         results = []
 
-        for doc in docs[:5]:
+        for doc in docs[:3]:
 
             title = doc.get("title", "Untitled Case")
             doc_id = doc.get("tid")
