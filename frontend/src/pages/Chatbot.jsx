@@ -38,6 +38,21 @@ export default function Chatbot() {
       createConversation();
     }
   }, [location.state]);
+  
+  // HIDE BOTPRESS CHATBOT WIDGET
+  useEffect(() => {
+    const widget = document.querySelector("#bp-web-widget-container, .bpFab");
+  
+    if (widget) {
+      widget.style.display = "none";
+    }
+  
+    return () => {
+      if (widget) {
+        widget.style.display = "block";
+      }
+    };
+  }, []);
 
   const loadMessages = async (conversationId) => {
     try {
@@ -145,6 +160,13 @@ export default function Chatbot() {
         body: JSON.stringify({
           message: userMessage,
           user_id: user.uid,
+          history: messages.slice(-6).map((m) => ({
+            role: m.sender === "user" ? "user" : "assistant",
+            content:
+              m.text?.type === "structured"
+                ? m.text.content.summary
+                : m.text?.content,
+          })),
         }),
       });
 
@@ -262,7 +284,7 @@ export default function Chatbot() {
               </div>
             ))}
 
-            {isTyping && <div className="italic">Typing...</div>}
+            {isTyping && (<div className="text-sm italic text-gray-600">Virtual Advocate is thinking...</div>)}
             <div ref={chatEndRef} />
           </div>
 
@@ -273,6 +295,12 @@ export default function Chatbot() {
               rows={1}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
             />
 
             <button
@@ -290,3 +318,4 @@ export default function Chatbot() {
   );
 
 }
+
