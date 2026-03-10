@@ -34,26 +34,32 @@ def build_judgment_query(category: str, statute_data: dict, issue_text: str = ""
 #MAIN ANALYZER
 def analyze_case(data: dict):
 
+    print("ANALYZER STEP 1: start")
+
     original_issue = data.get("original_issue", "")
     processed_issue = data.get("issue", "")
 
-    # STEP 1: CATEGORY DETECTION
+    print("ANALYZER STEP 2: classification")
+
     category, category_confidence = classify_issue(processed_issue)
 
-    # fallback to Gemini if ML confidence is low
     if category_confidence < 0.5:
+        print("ANALYZER STEP 3: AI fallback classification")
         category, category_confidence = classify_with_ai(processed_issue)
 
-    # STEP 2: STATUTE MAPPING
+    print("ANALYZER STEP 4: statute mapping")
+
     statute_data = map_statute_sections(original_issue, processed_issue)
 
-    # STEP 3: LEGAL GUIDANCE (Gemini)
+    print("ANALYZER STEP 5: generating guidance")
+
     legal_guidance = generate_legal_guidance({
         "category": category,
         "issue": processed_issue
     })
 
-    # STEP 4: JUDGMENT SEARCH
+    print("ANALYZER STEP 6: searching judgments")
+
     query, skip_first = build_judgment_query(
         category,
         statute_data,
@@ -62,7 +68,8 @@ def analyze_case(data: dict):
 
     judgments = search_cases(query, skip_first) if query else []
 
-    # SAFE CONFIDENCE HANDLING
+    print("ANALYZER STEP 7: finished")
+
     confidence_value = None
 
     if category == "Criminal":
@@ -71,22 +78,14 @@ def analyze_case(data: dict):
         try:
             confidence_value = round(float(category_confidence), 2)
         except:
-            confidence_value = category_confidence  # e.g. "AI-Detected"
+            confidence_value = category_confidence
 
-    # FINAL RESPONSE
     return {
         "detected_category": category,
-
         "confidence_level": confidence_value,
-
         "ipc_sections": statute_data.get("ipc_sections", []),
-
         "bns_sections": statute_data.get("bns_sections", []),
-
         "legal_guidance": legal_guidance,
-
         "related_judgments": judgments,
-
-        # GLOBAL DISCLAIMER
         "disclaimer": DISCLAIMER
     }
