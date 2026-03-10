@@ -2,10 +2,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from langdetect import detect
 import torch
 
-# ------------------------------
 # MODEL CONFIGURATION
-# ------------------------------
-
 MODEL_NAME = "facebook/nllb-200-distilled-300M"
 
 _tokenizer = None
@@ -22,10 +19,7 @@ LANG_MAP = {
     "en": "eng_Latn"
 }
 
-# ------------------------------
 # LOAD MODEL (ONLY ONCE)
-# ------------------------------
-
 def get_model():
     global _tokenizer, _model
 
@@ -41,11 +35,7 @@ def get_model():
 
     return _tokenizer, _model
 
-
-# ------------------------------
 # LANGUAGE DETECTION
-# ------------------------------
-
 def detect_language(text: str):
 
     try:
@@ -53,11 +43,7 @@ def detect_language(text: str):
     except Exception:
         return "en"
 
-
-# ------------------------------
 # TRANSLATE TO ENGLISH
-# ------------------------------
-
 def translate_to_english(text: str):
 
     if not text:
@@ -95,11 +81,7 @@ def translate_to_english(text: str):
 
     return translated
 
-
-# ------------------------------
 # GENERIC TRANSLATION
-# ------------------------------
-
 def translate_text(text: str, target_lang: str):
 
     if not text:
