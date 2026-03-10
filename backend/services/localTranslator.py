@@ -1,37 +1,37 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from langdetect import detect
 import torch
+from services.gemini_service import generate_reply
 
-# MODEL CONFIGURATION
+# CONFIGURATION
+USE_NLLB = False   # Keep NLLB code but disable it
+
 MODEL_NAME = "facebook/nllb-200-distilled-600M"
 
 _tokenizer = None
 _model = None
 
-# Reduce CPU usage for small containers
-torch.set_grad_enabled(False)
-torch.set_num_threads(1)
-
-# Language mapping
 LANG_MAP = {
     "hi": "hin_Deva",
     "mr": "mar_Deva",
     "en": "eng_Latn"
 }
 
-# LOAD MODEL (ONLY ONCE)
+# NLLB MODEL LOADER
 def get_model():
     global _tokenizer, _model
 
     if _model is None:
-        print("Loading NLLB translation model...")
+
+        print("Loading NLLB model...")
 
         _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
         _model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
         _model.eval()
+        torch.set_grad_enabled(False)
 
-        print("Translation model loaded")
+        print("NLLB model loaded")
 
     return _tokenizer, _model
 
@@ -40,77 +40,64 @@ def detect_language(text: str):
 
     try:
         return detect(text)
-    except Exception:
+    except:
         return "en"
 
-# TRANSLATE TO ENGLISH
+# GEMINI TRANSLATION
+def gemini_translate(text: str):
+
+    try:
+
+        prompt = f"""
+Translate the following text to English.
+
+Return only the translated text.
+
+{text}
+"""
+
+        result = generate_reply(prompt)
+
+        if isinstance(result, dict):
+            return result.get("text", text)
+
+        return result
+
+    except Exception as e:
+
+        print("Gemini translation error:", e)
+
+        return text
+
+# MAIN TRANSLATION FUNCTION
 def translate_to_english(text: str):
 
     if not text:
         return text
 
-    # Limit input size to avoid slow generation
     text = text.strip()[:500]
 
     lang = detect_language(text)
 
-    # If already English, skip translation
     if lang == "en":
         return text
 
-    tokenizer, model = get_model()
+    # If NLLB is enabled
+    if USE_NLLB:
 
-    tokenizer.src_lang = LANG_MAP.get(lang, "eng_Latn")
+        tokenizer, model = get_model()
 
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        truncation=True
-    )
+        tokenizer.src_lang = LANG_MAP.get(lang, "eng_Latn")
 
-    output = model.generate(
-        **inputs,
-        forced_bos_token_id=tokenizer.lang_code_to_id["eng_Latn"],
-        max_length=128
-    )
+        inputs = tokenizer(text, return_tensors="pt", truncation=True)
 
-    translated = tokenizer.batch_decode(
-        output,
-        skip_special_tokens=True
-    )[0]
+        output = model.generate(
+            **inputs,
+            forced_bos_token_id=tokenizer.lang_code_to_id["eng_Latn"],
+            max_length=128
+        )
 
-    return translated
+        return tokenizer.batch_decode(output, skip_special_tokens=True)[0]
 
-# GENERIC TRANSLATION
-def translate_text(text: str, target_lang: str):
-
-    if not text:
-        return text
-
-    if target_lang == "en":
-        return text
-
-    tokenizer, model = get_model()
-
-    tokenizer.src_lang = "eng_Latn"
-
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        truncation=True
-    )
-
-    output = model.generate(
-        **inputs,
-        forced_bos_token_id=tokenizer.lang_code_to_id[
-            LANG_MAP.get(target_lang, "eng_Latn")
-        ],
-        max_length=128
-    )
-
-    translated = tokenizer.batch_decode(
-        output,
-        skip_special_tokens=True
-    )[0]
-
-    return translated
+    # Default: Gemini translation
+    return gemini_translate(text)
