@@ -5,7 +5,8 @@ requests
 python-dotenv
 python-multipart
 transformers==4.38.2
-torch --index-url https://download.pytorch.org/whl/cpu
 sentencepiece
 google-genai
 langdetect
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.1+cpu
