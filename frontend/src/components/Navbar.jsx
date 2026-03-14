@@ -127,7 +127,7 @@ export default function Navbar() {
           <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 flex flex-col gap-3 md:hidden">
 
             <button onClick={() => navigate("/home")}>Home</button>
-            <button onClick={() => navigate("/chatbot")}>Chatbot</button>
+            <button onClick={() => navigate("/chatbot")}>Gemini Chatbot</button>
             <button onClick={() => navigate("/history")}>Case History</button>
             <button onClick={() => navigate("/chat-history")}>Chat History</button>
             <button onClick={() => setShowProfile(true)}>Profile</button>
