@@ -14,18 +14,23 @@ import { auth, db } from "../firebase";
 import Navbar from "../components/Navbar";
 
 export default function ChatHistory() {
+
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   useEffect(() => {
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+
       if (!user) {
         navigate("/login");
         return;
       }
 
       try {
+
         const q = query(
           collection(db, "conversations"),
           where("userId", "==", user.uid),
@@ -40,27 +45,41 @@ export default function ChatHistory() {
         }));
 
         setConversations(data);
+
       } catch (err) {
+
         console.error("Failed to fetch chat history:", err);
+
       } finally {
+
         setLoading(false);
+
       }
+
     });
 
     return () => unsubscribe();
+
   }, [navigate]);
 
   const handleDelete = async (id) => {
+
     if (!window.confirm("Delete this conversation permanently?")) return;
 
     try {
+
       await deleteDoc(doc(db, "conversations", id));
+
       setConversations((prev) =>
         prev.filter((c) => c.id !== id)
       );
+
     } catch (err) {
+
       console.error("Delete failed:", err);
+
     }
+
   };
 
   return (
@@ -69,6 +88,7 @@ export default function ChatHistory() {
       <Navbar />
 
       <div className="px-4 md:px-10 py-10">
+
         <div className="max-w-5xl mx-auto">
 
           <h1 className="text-2xl font-bold text-white mb-6">
@@ -80,12 +100,16 @@ export default function ChatHistory() {
           ) : conversations.length === 0 ? (
             <p className="text-white">No previous chats found.</p>
           ) : (
+
             <div className="grid gap-4">
+
               {conversations.map((c) => (
+
                 <div
                   key={c.id}
                   className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition"
                 >
+
                   <div
                     className="cursor-pointer"
                     onClick={() =>
@@ -97,6 +121,7 @@ export default function ChatHistory() {
                       })
                     }
                   >
+
                     <p className="font-semibold text-[#090979] text-lg">
                       {c.title || "Legal Consultation"}
                     </p>
@@ -108,6 +133,7 @@ export default function ChatHistory() {
                           ).toLocaleString()
                         : ""}
                     </p>
+
                   </div>
 
                   <button
@@ -116,12 +142,19 @@ export default function ChatHistory() {
                   >
                     Delete Permanently
                   </button>
+
                 </div>
+
               ))}
+
             </div>
+
           )}
+
         </div>
+
       </div>
+
     </div>
   );
 }
