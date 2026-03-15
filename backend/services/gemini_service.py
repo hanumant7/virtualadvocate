@@ -228,3 +228,50 @@ Issue: {issue_text}
         "procedure": ["Consult a licensed advocate"],
         "note": DISCLAIMER
     }
+
+# AI CASE TITLE GENERATOR
+def generate_case_title(message: str):
+
+    prompt = f"""
+You are an AI assistant for an Indian legal platform.
+
+Generate a SHORT professional case title based on the user's issue.
+
+Rules:
+- Maximum 6 words
+- Professional legal style
+- No punctuation
+- No quotes
+- Title case format
+
+Examples:
+
+User issue:
+Someone threatened me online
+
+Title:
+Online Criminal Intimidation Case
+
+User issue:
+Received defective product from online store
+
+Title:
+Consumer Product Defect Complaint
+
+User issue:
+{message}
+
+Return ONLY the title.
+"""
+
+    response = ask_gemini(prompt)
+
+    if not response:
+        return "Legal Consultation"
+
+    title = response.strip()
+
+    # Safety cleanup
+    title = title.replace('"', "").replace(".", "")
+
+    return title
