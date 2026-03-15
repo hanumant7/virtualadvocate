@@ -41,17 +41,42 @@ export default function Chatbot() {
   // HIDE BOTPRESS WIDGET
   useEffect(() => {
 
-  const hideBotpress = () => {
-
-    const elements = document.querySelectorAll(
-      "#bp-web-widget-container, .bpFab, .bpWebchat, iframe[src*='botpress']"
-    );
-
-    elements.forEach((el) => {
-      el.style.display = "none";
-    });
-
-  };
+    const hideBotpress = () => {
+  
+      const elements = document.querySelectorAll(
+        "#bp-web-widget-container, .bpFab, .bpWebchat, iframe[src*='botpress']"
+      );
+  
+      elements.forEach((el) => {
+        el.style.visibility = "hidden";
+        el.style.pointerEvents = "none";
+      });
+  
+    };
+  
+    const showBotpress = () => {
+  
+      const elements = document.querySelectorAll(
+        "#bp-web-widget-container, .bpFab, .bpWebchat, iframe[src*='botpress']"
+      );
+  
+      elements.forEach((el) => {
+        el.style.visibility = "visible";
+        el.style.pointerEvents = "auto";
+      });
+  
+    };
+  
+    hideBotpress();
+  
+    const interval = setInterval(hideBotpress, 500);
+  
+    return () => {
+      clearInterval(interval);
+      showBotpress();
+    };
+  
+  }, []);
 
   // run immediately
   hideBotpress();
