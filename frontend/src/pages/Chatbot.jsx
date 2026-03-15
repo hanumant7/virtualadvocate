@@ -23,16 +23,12 @@ export default function Chatbot() {
 
   const chatEndRef = useRef(null);
 
-  // ===============================
   // AUTO SCROLL
-  // ===============================
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // ===============================
   // LOAD EXISTING CONVERSATION
-  // ===============================
   useEffect(() => {
     if (location.state?.conversationId) {
       setConversationId(location.state.conversationId);
@@ -42,22 +38,24 @@ export default function Chatbot() {
     }
   }, [location.state]);
 
-  // ===============================
   // HIDE BOTPRESS WIDGET
-  // ===============================
   useEffect(() => {
-    const widget = document.querySelector("#bp-web-widget-container, .bpFab");
-
-    if (widget) widget.style.display = "none";
-
+    const widgets = document.querySelectorAll(
+      "#bp-web-widget-container, .bpFab, .bpWebchat"
+    );
+  
+    widgets.forEach((el) => {
+      el.style.display = "none";
+    });
+  
     return () => {
-      if (widget) widget.style.display = "block";
+      widgets.forEach((el) => {
+        el.style.display = "block";
+      });
     };
   }, []);
 
-  // ===============================
-  // LOAD MESSAGES FROM FIRESTORE
-  // ===============================
+  // LOAD MESSAGES
   const loadMessages = async (conversationId) => {
     try {
       const q = query(
@@ -66,7 +64,6 @@ export default function Chatbot() {
       );
 
       const snapshot = await getDocs(q);
-
       const msgs = snapshot.docs.map((doc) => doc.data());
 
       setMessages(msgs);
@@ -75,9 +72,7 @@ export default function Chatbot() {
     }
   };
 
-  // ===============================
   // CREATE CONVERSATION
-  // ===============================
   const createConversation = async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -86,6 +81,7 @@ export default function Chatbot() {
       const docRef = await addDoc(collection(db, "conversations"), {
         userId: user.uid,
         model: "gemini",
+        title: "New Legal Consultation",
         createdAt: serverTimestamp(),
         lastUpdated: serverTimestamp(),
       });
@@ -114,9 +110,7 @@ export default function Chatbot() {
     }
   };
 
-  // ===============================
   // SAVE MESSAGE
-  // ===============================
   const saveMessage = async (sender, text) => {
     if (!conversationId) return;
 
@@ -138,9 +132,7 @@ export default function Chatbot() {
     }
   };
 
-  // ===============================
   // BUILD CONTEXT HISTORY
-  // ===============================
   const buildHistory = (msgs) => {
     return msgs.slice(-12).map((m) => ({
       role: m.sender === "user" ? "user" : "assistant",
@@ -151,9 +143,7 @@ export default function Chatbot() {
     }));
   };
 
-  // ===============================
   // SEND MESSAGE
-  // ===============================
   const sendMessage = async () => {
     if (!input.trim() || !conversationId) return;
 
@@ -167,7 +157,6 @@ export default function Chatbot() {
       content: userMessage,
     };
 
-    // UPDATED MESSAGES (fix async bug)
     const updatedMessages = [
       ...messages,
       { sender: "user", text: userPayload },
@@ -178,6 +167,33 @@ export default function Chatbot() {
     setIsTyping(true);
 
     await saveMessage("user", userPayload);
+
+    // AI TITLE GENERATION (ONLY FIRST USER MESSAGE)
+    if (messages.length === 1) {
+      try {
+        const res = await fetch(
+          "https://virtualadvocate-production.up.railway.app/generate-title",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              message: userMessage,
+              user_id: user.uid,
+            }),
+          }
+        );
+
+        const data = await res.json();
+
+        await updateDoc(doc(db, "conversations", conversationId), {
+          title: data.title,
+        });
+      } catch (error) {
+        console.error("AI title generation failed:", error);
+      }
+    }
 
     try {
       const response = await fetch(
@@ -268,9 +284,7 @@ export default function Chatbot() {
 
                       {msg.text.content.applicable_laws?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2">
-                            Applicable Laws:
-                          </p>
+                          <p className="font-semibold mt-2">Applicable Laws:</p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.applicable_laws.map((law, i) => (
                               <li key={i}>{law}</li>
@@ -281,9 +295,7 @@ export default function Chatbot() {
 
                       {msg.text.content.legal_options?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2">
-                            Legal Options:
-                          </p>
+                          <p className="font-semibold mt-2">Legal Options:</p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.legal_options.map((opt, i) => (
                               <li key={i}>{opt}</li>
@@ -294,9 +306,7 @@ export default function Chatbot() {
 
                       {msg.text.content.next_steps?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2">
-                            Next Steps:
-                          </p>
+                          <p className="font-semibold mt-2">Next Steps:</p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.next_steps.map((step, i) => (
                               <li key={i}>{step}</li>
