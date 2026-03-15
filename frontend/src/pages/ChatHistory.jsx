@@ -98,7 +98,7 @@ export default function ChatHistory() {
                     }
                   >
                     <p className="font-semibold text-[#090979] text-lg">
-                      {"Gemini Legal AI"}
+                      {c.title || "Legal Consultation"}
                     </p>
 
                     <p className="text-xs text-gray-500 mt-1">
