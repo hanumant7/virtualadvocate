@@ -8,7 +8,7 @@ from schemas.search import SearchRequest
 from services.analyzer import analyze_case
 from services.indiankanoon import search_cases
 from services.localTranslator import translate_to_english
-from services.gemini_service import generate_reply
+from services.gemini_service import generate_reply, generate_case_title
 
 # APP INITIALIZATION
 app = FastAPI(
@@ -94,6 +94,33 @@ def gemini_chat(data: ChatRequest):
         return {
             "type": "text",
             "content": "Unable to process the request right now."
+        }
+
+# AI CASE TITLE GENERATOR
+@app.post("/generate-title")
+def generate_title(data: ChatRequest):
+
+    try:
+
+        message = data.message.strip()
+
+        if not message:
+            return {"title": "Legal Consultation"}
+
+        title = generate_case_title(message)
+
+        print("Generated title:", title)
+
+        return {
+            "title": title
+        }
+
+    except Exception as e:
+
+        print("Title generation error:", e)
+
+        return {
+            "title": "Legal Consultation"
         }
 
 # ANALYZER (CORE)
