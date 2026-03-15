@@ -40,20 +40,28 @@ export default function Chatbot() {
 
   // HIDE BOTPRESS WIDGET
   useEffect(() => {
-    const widgets = document.querySelectorAll(
-      "#bp-web-widget-container, .bpFab, .bpWebchat"
+
+  const hideBotpress = () => {
+
+    const elements = document.querySelectorAll(
+      "#bp-web-widget-container, .bpFab, .bpWebchat, iframe[src*='botpress']"
     );
-  
-    widgets.forEach((el) => {
+
+    elements.forEach((el) => {
       el.style.display = "none";
     });
-  
-    return () => {
-      widgets.forEach((el) => {
-        el.style.display = "block";
-      });
-    };
-  }, []);
+
+  };
+
+  // run immediately
+  hideBotpress();
+
+  // run again if widget loads later
+  const interval = setInterval(hideBotpress, 500);
+
+  return () => clearInterval(interval);
+
+}, []);
 
   // LOAD MESSAGES
   const loadMessages = async (conversationId) => {
