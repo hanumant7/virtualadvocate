@@ -197,7 +197,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#EAF4FF] via-[#DCEEFF] to-[#CFE4FF]">
+    <div className="min-h-screen bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]">
       <Navbar onProfileClick={() => setShowProfile(true)} />
 
       {showProfile && (
