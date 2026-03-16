@@ -83,30 +83,36 @@ export default function ChatHistory() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]">
+
+    <div className="min-h-screen bg-gradient-to-br from-[#E8F1FF] via-[#D6E6FF] to-[#C7DBFF]">
+
       <Navbar />
 
       <div className="px-4 md:px-10 py-10">
 
         <div className="max-w-5xl mx-auto">
 
-          <h1 className="text-2xl font-bold text-white mb-6">
+          <h1 className="text-3xl font-bold text-[#1E3A8A] mb-8">
             Your Chat History
           </h1>
 
           {loading ? (
-            <p className="text-white">Loading conversations...</p>
+
+            <p className="text-[#1E3A8A]">Loading conversations...</p>
+
           ) : conversations.length === 0 ? (
-            <p className="text-white">No previous chats found.</p>
+
+            <p className="text-[#1E3A8A]">No previous chats found.</p>
+
           ) : (
 
-            <div className="grid gap-4">
+            <div className="grid gap-5">
 
               {conversations.map((c) => (
 
                 <div
                   key={c.id}
-                  className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition"
+                  className="bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-blue-100"
                 >
 
                   <div
@@ -121,11 +127,11 @@ export default function ChatHistory() {
                     }
                   >
 
-                    <p className="font-semibold text-[#090979] text-lg">
+                    <p className="font-semibold text-[#1E3A8A] text-lg">
                       {c.title || "Legal Consultation"}
                     </p>
 
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 mt-2">
                       {c.lastUpdated?.seconds
                         ? new Date(
                             c.lastUpdated.seconds * 1000
@@ -137,7 +143,7 @@ export default function ChatHistory() {
 
                   <button
                     onClick={() => handleDelete(c.id)}
-                    className="mt-4 text-sm text-red-600 hover:underline"
+                    className="mt-4 text-sm font-medium text-red-500 hover:text-red-700 transition"
                   >
                     Delete Permanently
                   </button>
@@ -155,5 +161,7 @@ export default function ChatHistory() {
       </div>
 
     </div>
+
   );
+
 }
