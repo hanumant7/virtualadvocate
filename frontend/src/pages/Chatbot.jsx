@@ -29,12 +29,10 @@ export default function Chatbot() {
 
   const chatEndRef = useRef(null);
 
-  // AUTO SCROLL
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  // LOAD EXISTING CONVERSATION
   useEffect(() => {
 
     if (location.state?.conversationId) {
@@ -50,14 +48,12 @@ export default function Chatbot() {
 
   }, [location.state]);
 
-  // HIDE BOTPRESS WIDGET
   useEffect(() => {
 
     hideBotpress();
-  
+
   }, []);
 
-  // LOAD MESSAGES
   const loadMessages = async (conversationId) => {
 
     try {
@@ -81,12 +77,13 @@ export default function Chatbot() {
       setMessages(msgs);
 
     } catch (error) {
+
       console.error("Error loading messages:", error);
+
     }
 
   };
 
-  // CREATE CONVERSATION
   const createConversation = async () => {
 
     const user = auth.currentUser;
@@ -123,12 +120,13 @@ export default function Chatbot() {
       );
 
     } catch (error) {
+
       console.error("Error creating conversation:", error);
+
     }
 
   };
 
-  // SAVE MESSAGE
   const saveMessage = async (sender, text) => {
 
     if (!conversationId) return;
@@ -149,12 +147,13 @@ export default function Chatbot() {
       });
 
     } catch (error) {
+
       console.error("Error saving message:", error);
+
     }
 
   };
 
-  // UPDATE TITLE
   const updateTitle = async () => {
 
     if (!conversationId) return;
@@ -168,12 +167,13 @@ export default function Chatbot() {
       setEditingTitle(false);
 
     } catch (error) {
+
       console.error("Title update failed:", error);
+
     }
 
   };
 
-  // BUILD CONTEXT HISTORY
   const buildHistory = (msgs) => {
 
     return msgs.slice(-12).map((m) => ({
@@ -186,7 +186,6 @@ export default function Chatbot() {
 
   };
 
-  // SEND MESSAGE
   const sendMessage = async () => {
 
     if (!input.trim() || !conversationId) return;
@@ -211,39 +210,6 @@ export default function Chatbot() {
     setIsTyping(true);
 
     await saveMessage("user", userPayload);
-
-    // AI TITLE GENERATION (FIRST MESSAGE)
-    if (messages.length === 1) {
-
-      try {
-
-        const res = await fetch(
-          "https://virtualadvocate-production.up.railway.app/generate-title",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              message: userMessage,
-              user_id: user.uid,
-            }),
-          }
-        );
-
-        const data = await res.json();
-
-        setTitle(data.title);
-
-        await updateDoc(doc(db, "conversations", conversationId), {
-          title: data.title,
-        });
-
-      } catch (error) {
-        console.error("AI title generation failed:", error);
-      }
-
-    }
 
     try {
 
@@ -296,13 +262,16 @@ export default function Chatbot() {
       await saveMessage("bot", errorReply);
 
     } finally {
+
       setIsTyping(false);
+
     }
 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]">
+
+    <div className="min-h-screen bg-gradient-to-br from-[#E8F1FF] via-[#D6E6FF] to-[#C7DBFF]">
 
       <Navbar />
 
@@ -321,16 +290,15 @@ export default function Chatbot() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") updateTitle();
                 }}
-                className="font-bold text-xl text-[#090979] border-b outline-none"
+                className="font-bold text-xl text-[#1E3A8A] border-b outline-none"
                 autoFocus
               />
 
             ) : (
 
               <h2
-                className="font-bold text-xl text-[#090979] cursor-pointer"
+                className="font-bold text-xl text-[#1E3A8A] cursor-pointer"
                 onClick={() => setEditingTitle(true)}
-                title="Click to rename"
               >
                 {title}
               </h2>
@@ -339,7 +307,7 @@ export default function Chatbot() {
 
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 pb-24 bg-[#9EC6F3]">
+          <div className="flex-1 overflow-y-auto p-6 pb-24 bg-[#F3F8FF]">
 
             {messages.map((msg, idx) => (
               <div
@@ -354,8 +322,8 @@ export default function Chatbot() {
                 <div
                   className={`px-4 py-3 rounded-2xl ${
                     msg.sender === "user"
-                      ? "bg-[#090979] text-white"
-                      : "bg-[#BDDDE4] text-[#090979]"
+                      ? "bg-[#1E3A8A] text-white"
+                      : "bg-white border border-blue-100 text-[#1E3A8A]"
                   }`}
                 >
 
@@ -370,8 +338,8 @@ export default function Chatbot() {
                           <ul className="list-disc ml-5">
                             {msg.text.content.applicable_laws.map((law, i) => (
                               <li key={i}>
-                                {law.description}  
-                                <span className="text-sm text-gray-600">
+                                {law.description}
+                                <span className="text-sm text-gray-500">
                                   {" "}({law.law} → {law.bns_equivalent})
                                 </span>
                               </li>
@@ -416,7 +384,7 @@ export default function Chatbot() {
             ))}
 
             {isTyping && (
-              <div className="text-sm italic text-gray-600">
+              <div className="text-sm italic text-gray-500">
                 Virtual Advocate is thinking...
               </div>
             )}
@@ -425,11 +393,11 @@ export default function Chatbot() {
 
           </div>
 
-          <div className="p-4 border-t flex items-center gap-3 bg-white mb-4">
+          <div className="p-4 border-t flex items-center gap-3 bg-white">
 
             <textarea
-              className="flex-1 resize-none rounded-lg border px-3 py-2 focus:outline-none"
-              placeholder="Type your legal issue..."
+              className="flex-1 resize-none rounded-lg border border-blue-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Describe your legal issue..."
               rows={1}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -444,7 +412,7 @@ export default function Chatbot() {
             <button
               onClick={sendMessage}
               disabled={!input.trim() || isTyping}
-              className="px-4 py-2 rounded-lg bg-[#090979] text-white disabled:opacity-50"
+              className="px-5 py-2 rounded-lg bg-[#1E3A8A] text-white hover:bg-[#1D4ED8] transition disabled:opacity-50"
             >
               Send
             </button>
@@ -456,5 +424,7 @@ export default function Chatbot() {
       </div>
 
     </div>
+
   );
+
 }
