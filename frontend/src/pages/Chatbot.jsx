@@ -369,7 +369,12 @@ export default function Chatbot() {
                           <p className="font-semibold mt-2">Applicable Laws:</p>
                           <ul className="list-disc ml-5">
                             {msg.text.content.applicable_laws.map((law, i) => (
-                              <li key={i}>{law}</li>
+                              <li key={i}>
+                                {law.description}  
+                                <span className="text-sm text-gray-600">
+                                  {" "}({law.law} → {law.bns_equivalent})
+                                </span>
+                              </li>
                             ))}
                           </ul>
                         </>
