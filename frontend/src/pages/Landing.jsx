@@ -5,17 +5,12 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div
-      className="min-h-screen flex flex-col px-6 pt-6"
-      style={{
-        background:
-          "linear-gradient(90deg, rgba(143, 135, 241, 1) 15%, rgba(198, 142, 253, 1) 56%, rgba(159, 179, 223, 1) 94%)",
-      }}
-    >
+    <div className="min-h-screen flex flex-col px-6 pt-6 bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]">
       {/* Top Logo Section */}
       <div className="flex items-center gap-3">
         <img
           src={logo}
+
           alt="Virtual Advocate Logo"
           className="w-12 h-12 object-contain"
         />
