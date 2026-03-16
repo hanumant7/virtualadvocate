@@ -86,7 +86,7 @@ export default function History() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#8F87F1] to-[#C68EFD]">
+    <div className="min-h-screen bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]">
       
       {/* ✅ Shared Navbar */}
       <Navbar />
