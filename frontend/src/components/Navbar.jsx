@@ -74,7 +74,7 @@ export default function Navbar() {
 
     <>
 
-      <div className="bg-white/80 backdrop-blur-md border-b border-blue-100 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm relative">
+      <div className="bg-white/80 backdrop-blur-md border-b border-blue-100 px-4 md:px-8 py-4 flex justify-between items-center shadow-sm relative z-50">
 
         {/* Logo */}
 
@@ -156,7 +156,7 @@ export default function Navbar() {
 
         {mobileMenu && (
 
-          <div className="absolute top-16 right-4 bg-white border border-blue-100 shadow-lg rounded-xl p-4 flex flex-col gap-3 md:hidden">
+          <div className="absolute top-16 right-4 bg-white border border-blue-100 shadow-lg rounded-xl p-4 flex flex-col gap-3 md:hidden z-50">
 
             <button
               onClick={() => navigate("/home")}
