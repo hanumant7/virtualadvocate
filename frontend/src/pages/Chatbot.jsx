@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { hideBotpress } from "../components/botpressControl";
 import Navbar from "../components/Navbar";
 import {
   collection,
@@ -52,24 +53,8 @@ export default function Chatbot() {
   // HIDE BOTPRESS WIDGET
   useEffect(() => {
 
-    const hideBotpress = () => {
-
-      const elements = document.querySelectorAll(
-        "#bp-web-widget-container, .bpFab, .bpWebchat, iframe[src*='botpress']"
-      );
-
-      elements.forEach((el) => {
-        el.style.display = "none";
-      });
-
-    };
-
     hideBotpress();
-
-    const interval = setInterval(hideBotpress, 500);
-
-    return () => clearInterval(interval);
-
+  
   }, []);
 
   // LOAD MESSAGES
