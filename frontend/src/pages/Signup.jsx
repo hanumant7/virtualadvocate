@@ -7,11 +7,15 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+
 import { auth, db } from "../firebase";
 
 export default function Signup() {
+
   const navigate = useNavigate();
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,49 +30,54 @@ export default function Signup() {
   });
 
   const handleChange = (e) => {
+
     setForm({ ...form, [e.target.name]: e.target.value });
+
   };
 
   const handleSignup = async () => {
-    const { name, age, gender, phone, email, password, confirmPassword } =
-      form;
+
+    const { name, age, gender, phone, email, password, confirmPassword } = form;
 
     setError("");
 
-    if (
-      !name ||
-      !age ||
-      !gender ||
-      !phone ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
+    if (!name || !age || !gender || !phone || !email || !password || !confirmPassword) {
+
       setError("All fields are required.");
       return;
+
     }
 
     if (Number(age) < 18 || Number(age) > 100) {
+
       setError("Age must be between 18 and 100.");
       return;
+
     }
 
     if (!/^\d{10}$/.test(phone)) {
+
       setError("Phone number must be 10 digits.");
       return;
+
     }
 
     if (password.length < 6) {
+
       setError("Password must be at least 6 characters.");
       return;
+
     }
 
     if (password !== confirmPassword) {
+
       setError("Passwords do not match.");
       return;
+
     }
 
     try {
+
       setLoading(true);
 
       const userCred = await createUserWithEmailAndPassword(
@@ -82,6 +91,7 @@ export default function Signup() {
       });
 
       await setDoc(doc(db, "users", userCred.user.uid), {
+
         uid: userCred.user.uid,
         name,
         age: Number(age),
@@ -91,21 +101,30 @@ export default function Signup() {
         role: "User",
         provider: "manual",
         createdAt: serverTimestamp(),
+
       });
 
       navigate("/home");
+
     } catch (err) {
+
       setError(err.message.replace("Firebase:", "").trim());
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#8F87F1] to-[#C68EFD] px-4">
-      <div className="w-full max-w-md p-8 rounded-2xl shadow-xl bg-[#9EC6F3]">
 
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 text-[#090979]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#E8F1FF] via-[#D6E6FF] to-[#C7DBFF] px-4">
+
+      <div className="w-full max-w-md p-8 rounded-2xl shadow-xl bg-white/80 backdrop-blur-md border border-blue-100">
+
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 text-[#1E3A8A]">
           Create Account
         </h2>
 
@@ -124,7 +143,6 @@ export default function Signup() {
           onChange={handleChange}
         />
 
-        {/* ✅ FIXED Gender Dropdown */}
         <FloatingSelect
           label="Gender"
           name="gender"
@@ -171,21 +189,28 @@ export default function Signup() {
         <button
           onClick={handleSignup}
           disabled={loading}
-          className="w-full bg-[#090979] text-white py-3 rounded-lg font-semibold hover:opacity-90 transition"
+          className="w-full bg-[#1E3A8A] text-white py-3 rounded-lg font-semibold hover:bg-[#1D4ED8] transition"
         >
           {loading ? "Creating Account..." : "Sign Up"}
         </button>
 
-        <p className="text-center mt-4 text-sm">
+        <p className="text-center mt-4 text-sm text-[#1E3A8A]">
+
           Already have an account?{" "}
+
           <span
             onClick={() => navigate("/login")}
             className="underline cursor-pointer font-semibold"
           >
             Log In
           </span>
+
         </p>
+
       </div>
+
     </div>
+
   );
+
 }
