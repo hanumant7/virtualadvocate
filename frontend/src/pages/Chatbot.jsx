@@ -306,9 +306,9 @@ export default function Chatbot() {
 
       <Navbar />
 
-      <div className="flex justify-center px-4 md:px-10 py-8">
+      <div className="flex justify-center px-4 md:px-10 py-8 mb-20">
 
-        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl flex flex-col h-[85vh]">
+        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl flex flex-col h-[75vh] md:h-[80vh]">
 
           <div className="px-6 py-4 border-b flex justify-between items-center">
 
@@ -339,7 +339,7 @@ export default function Chatbot() {
 
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 bg-[#9EC6F3]">
+          <div className="flex-1 overflow-y-auto p-6 pb-24 bg-[#9EC6F3]">
 
             {messages.map((msg, idx) => (
               <div
@@ -420,7 +420,7 @@ export default function Chatbot() {
 
           </div>
 
-          <div className="p-4 border-t flex items-center gap-3 bg-white">
+          <div className="p-4 border-t flex items-center gap-3 bg-white mb-4">
 
             <textarea
               className="flex-1 resize-none rounded-lg border px-3 py-2 focus:outline-none"
