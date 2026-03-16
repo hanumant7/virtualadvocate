@@ -3,10 +3,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#0B3D91",   // deep legal blue (buttons/navbar)
-        secondary: "#DCEEFF", // soft court blue
-        accent: "#6FA8DC",    // lighter professional blue
-        light: "#F5FAFF",     // background panel
+        primary: "#1E3A8A",   // strong navy blue
+        secondary: "#93C5FD", // medium legal blue
+        accent: "#60A5FA",    // lighter accent blue
+        light: "#EFF6FF",     // soft background
       },
     },
   },
