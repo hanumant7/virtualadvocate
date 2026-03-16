@@ -83,26 +83,50 @@ export default function Home() {
     return () => unsubscribe();
   }, [navigate]);
 
-  // 🤖 Load Botpress Floating Widget (Home Only)
+  // 🤖 Load Botpress ONLY on Home Page
   useEffect(() => {
-  if (window.botpressInitialized) return;
-
-  const injectScript = document.createElement("script");
-  injectScript.src = "https://cdn.botpress.cloud/webchat/v3.6/inject.js";
-  injectScript.async = true;
-
-  injectScript.onload = () => {
-    const botScript = document.createElement("script");
-    botScript.src =
-      "https://files.bpcontent.cloud/2026/02/12/09/20260212093542-X7ROZT2H.js";
-    botScript.defer = true;
-
-    document.body.appendChild(botScript);
-    window.botpressInitialized = true;
-  };
-
-  document.body.appendChild(injectScript);
-}, []);
+  
+    const injectBotpress = () => {
+  
+      if (window.botpressLoaded) return;
+  
+      const injectScript = document.createElement("script");
+      injectScript.src = "https://cdn.botpress.cloud/webchat/v3.6/inject.js";
+      injectScript.async = true;
+  
+      injectScript.onload = () => {
+  
+        const botScript = document.createElement("script");
+        botScript.src =
+          "https://files.bpcontent.cloud/2026/02/12/09/20260212093542-X7ROZT2H.js";
+        botScript.defer = true;
+  
+        document.body.appendChild(botScript);
+  
+        window.botpressLoaded = true;
+  
+      };
+  
+      document.body.appendChild(injectScript);
+  
+    };
+  
+    injectBotpress();
+  
+    return () => {
+  
+      // hide widget when leaving home page
+      const elements = document.querySelectorAll(
+        "#bp-web-widget-container, .bpFab, .bpWebchat, iframe[src*='botpress']"
+      );
+  
+      elements.forEach((el) => {
+        el.style.display = "none";
+      });
+  
+    };
+  
+  }, []);
 
   // 💾 SAVE CASE
   const saveCaseHistory = async (data) => {
