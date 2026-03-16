@@ -83,8 +83,7 @@ export default function ChatHistory() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#8F87F1] to-[#C68EFD]">
-
+    <div className="min-h-screen bg-gradient-to-br from-[#EFF6FF] via-[#DBEAFE] to-[#BFDBFE]">
       <Navbar />
 
       <div className="px-4 md:px-10 py-10">
