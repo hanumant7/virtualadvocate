@@ -270,154 +270,152 @@ export default function Chatbot() {
   };
 
   return (
+  <div className="min-h-screen bg-gradient-to-br from-[#EAF2FF] via-[#DCE9FF] to-[#C9DCFF]">
 
-    <div className="min-h-screen bg-gradient-to-br from-[#E8F1FF] via-[#D6E6FF] to-[#C7DBFF]">
+    <Navbar />
 
-      <Navbar />
+    <div className="flex justify-center px-4 md:px-10 py-6">
 
-      <div className="flex justify-center px-4 md:px-10 py-8 mb-20">
+      <div className="w-full max-w-4xl flex flex-col h-[85vh]">
 
-        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl flex flex-col h-[75vh] md:h-[80vh]">
+        {/* HEADER */}
+        <div className="bg-white/70 backdrop-blur-lg border border-blue-100 shadow-md rounded-t-2xl px-6 py-4 flex justify-between items-center">
 
-          <div className="px-6 py-4 border-b flex justify-between items-center">
+          {editingTitle ? (
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={updateTitle}
+              onKeyDown={(e) => e.key === "Enter" && updateTitle()}
+              className="font-bold text-xl text-[#1E3A8A] bg-transparent border-b outline-none"
+              autoFocus
+            />
+          ) : (
+            <h2
+              className="font-bold text-xl text-[#1E3A8A] cursor-pointer"
+              onClick={() => setEditingTitle(true)}
+            >
+              ⚖️ {title}
+            </h2>
+          )}
 
-            {editingTitle ? (
+        </div>
 
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={updateTitle}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") updateTitle();
-                }}
-                className="font-bold text-xl text-[#1E3A8A] border-b outline-none"
-                autoFocus
-              />
+        {/* CHAT AREA */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-[#F5F9FF]">
 
-            ) : (
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex items-end gap-2 ${
+                msg.sender === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
 
-              <h2
-                className="font-bold text-xl text-[#1E3A8A] cursor-pointer"
-                onClick={() => setEditingTitle(true)}
-              >
-                {title}
-              </h2>
+              {/* BOT AVATAR */}
+              {msg.sender === "bot" && (
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-[#1E3A8A] text-sm">
+                  ⚖️
+                </div>
+              )}
 
-            )}
-
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6 pb-24 bg-[#F3F8FF]">
-
-            {messages.map((msg, idx) => (
+              {/* MESSAGE */}
               <div
-                key={idx}
-                className={`mb-4 max-w-[75%] ${
+                className={`px-4 py-3 rounded-2xl max-w-[70%] shadow-sm ${
                   msg.sender === "user"
-                    ? "ml-auto text-right"
-                    : "mr-auto text-left"
+                    ? "bg-[#1E3A8A] text-white rounded-br-sm"
+                    : "bg-white border border-blue-100 text-[#1E3A8A] rounded-bl-sm"
                 }`}
               >
 
-                <div
-                  className={`px-4 py-3 rounded-2xl ${
-                    msg.sender === "user"
-                      ? "bg-[#1E3A8A] text-white"
-                      : "bg-white border border-blue-100 text-[#1E3A8A]"
-                  }`}
-                >
+                {msg.text?.type === "structured" ? (
+                  <>
+                    <p className="font-semibold mb-2">Summary</p>
+                    <p className="mb-2 text-sm">{msg.text.content.summary}</p>
 
-                  {msg.text?.type === "structured" ? (
-                    <>
-                      <p className="font-semibold mb-2">Summary:</p>
-                      <p className="mb-3">{msg.text.content.summary}</p>
+                    {msg.text.content.applicable_laws?.length > 0 && (
+                      <>
+                        <p className="font-semibold mt-2 text-sm">Laws</p>
+                        <ul className="list-disc ml-4 text-sm">
+                          {msg.text.content.applicable_laws.map((law, i) => (
+                            <li key={i}>
+                              {law.description}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
 
-                      {msg.text.content.applicable_laws?.length > 0 && (
-                        <>
-                          <p className="font-semibold mt-2">Applicable Laws:</p>
-                          <ul className="list-disc ml-5">
-                            {msg.text.content.applicable_laws.map((law, i) => (
-                              <li key={i}>
-                                {law.description}
-                                <span className="text-sm text-gray-500">
-                                  {" "}({law.law} → {law.bns_equivalent})
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
+                    {msg.text.content.next_steps?.length > 0 && (
+                      <>
+                        <p className="font-semibold mt-2 text-sm">Next Steps</p>
+                        <ul className="list-disc ml-4 text-sm">
+                          {msg.text.content.next_steps.map((step, i) => (
+                            <li key={i}>{step}</li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
 
-                      {msg.text.content.legal_options?.length > 0 && (
-                        <>
-                          <p className="font-semibold mt-2">Legal Options:</p>
-                          <ul className="list-disc ml-5">
-                            {msg.text.content.legal_options.map((opt, i) => (
-                              <li key={i}>{opt}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
+                    <p className="text-xs mt-2 italic opacity-70">
+                      {msg.text.content.note}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm leading-relaxed">{msg.text?.content}</p>
+                )}
 
-                      {msg.text.content.next_steps?.length > 0 && (
-                        <>
-                          <p className="font-semibold mt-2">Next Steps:</p>
-                          <ul className="list-disc ml-5">
-                            {msg.text.content.next_steps.map((step, i) => (
-                              <li key={i}>{step}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
+              </div>
 
-                      <p className="text-xs mt-3 italic">
-                        {msg.text.content.note}
-                      </p>
-                    </>
-                  ) : (
-                    msg.text?.content
-                  )}
-
+              {/* USER AVATAR */}
+              {msg.sender === "user" && (
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1E3A8A] text-white text-sm">
+                  👤
                 </div>
+              )}
+            </div>
+          ))}
 
+          {/* TYPING ANIMATION */}
+          {isTyping && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-[#1E3A8A]">
+                ⚖️
               </div>
-            ))}
-
-            {isTyping && (
-              <div className="text-sm italic text-gray-500">
-                Virtual Advocate is thinking...
+              <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-blue-100">
+                <span className="animate-pulse">...</span>
               </div>
-            )}
+            </div>
+          )}
 
-            <div ref={chatEndRef} />
+          <div ref={chatEndRef} />
 
-          </div>
+        </div>
 
-          <div className="p-4 border-t flex items-center gap-3 bg-white">
+        {/* INPUT */}
+        <div className="bg-white/80 backdrop-blur-lg border-t border-blue-100 px-4 py-3 flex items-center gap-3 rounded-b-2xl">
 
-            <textarea
-              className="flex-1 resize-none rounded-lg border border-blue-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              placeholder="Describe your legal issue..."
-              rows={1}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-            />
+          <textarea
+            className="flex-1 resize-none rounded-full border border-blue-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
+            placeholder="Describe your legal issue..."
+            rows={1}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
+          />
 
-            <button
-              onClick={sendMessage}
-              disabled={!input.trim() || isTyping}
-              className="px-5 py-2 rounded-lg bg-[#1E3A8A] text-white hover:bg-[#1D4ED8] transition disabled:opacity-50"
-            >
-              Send
-            </button>
-
-          </div>
+          <button
+            onClick={sendMessage}
+            disabled={!input.trim() || isTyping}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1E3A8A] text-white hover:bg-[#1D4ED8] transition disabled:opacity-50"
+          >
+            ➤
+          </button>
 
         </div>
 
@@ -425,6 +423,5 @@ export default function Chatbot() {
 
     </div>
 
-  );
-
-}
+  </div>
+);
