@@ -233,24 +233,10 @@ export default function Chatbot() {
         <div className="w-full max-w-4xl flex flex-col h-[85vh]">
 
           {/* HEADER */}
-          <div className="bg-white/70 backdrop-blur-lg border border-blue-100 shadow-md rounded-t-2xl px-6 py-4 flex justify-between items-center">
-            {editingTitle ? (
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={updateTitle}
-                onKeyDown={(e) => e.key === "Enter" && updateTitle()}
-                className="font-bold text-xl text-[#1E3A8A] bg-transparent border-b outline-none"
-                autoFocus
-              />
-            ) : (
-              <h2
-                className="font-bold text-xl text-[#1E3A8A] cursor-pointer"
-                onClick={() => setEditingTitle(true)}
-              >
-                ⚖️ {title}
-              </h2>
-            )}
+          <div className="bg-white/70 backdrop-blur-lg border border-blue-100 shadow-md rounded-t-2xl px-6 py-4">
+            <h2 className="font-bold text-xl text-[#1E3A8A]">
+              ⚖️ {title}
+            </h2>
           </div>
 
           {/* CHAT AREA */}
@@ -259,13 +245,13 @@ export default function Chatbot() {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex items-end gap-2 ${
+                className={`flex gap-2 ${
                   msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
 
                 {msg.sender === "bot" && (
-                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-[#1E3A8A]">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
                     ⚖️
                   </div>
                 )}
@@ -273,22 +259,45 @@ export default function Chatbot() {
                 <div
                   className={`px-4 py-3 rounded-2xl max-w-[70%] shadow-sm ${
                     msg.sender === "user"
-                      ? "bg-[#1E3A8A] text-white rounded-br-sm"
-                      : "bg-white border border-blue-100 text-[#1E3A8A] rounded-bl-sm"
+                      ? "bg-[#1E3A8A] text-white"
+                      : "bg-white border border-blue-100 text-[#1E3A8A]"
                   }`}
                 >
 
                   {msg.text?.type === "structured" ? (
                     <>
                       <p className="font-semibold mb-2">Summary</p>
-                      <p className="mb-2 text-sm">{msg.text.content.summary}</p>
+                      <p className="mb-3 text-sm">
+                        {msg.text.content.summary}
+                      </p>
 
                       {msg.text.content.applicable_laws?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2 text-sm">Applicable Laws</p>
-                          <ul className="list-disc ml-4 text-sm">
+                          <p className="font-semibold mt-2 text-sm">
+                            Applicable Laws
+                          </p>
+                          <ul className="list-disc ml-5 text-sm">
                             {msg.text.content.applicable_laws.map((law, i) => (
-                              <li key={i}>{law.description}</li>
+                              <li key={i}>
+                                {law.description}
+                                <span className="text-xs text-gray-500">
+                                  {" "}
+                                  ({law.law} → {law.bns_equivalent})
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+
+                      {msg.text.content.legal_options?.length > 0 && (
+                        <>
+                          <p className="font-semibold mt-2 text-sm">
+                            Legal Options
+                          </p>
+                          <ul className="list-disc ml-5 text-sm">
+                            {msg.text.content.legal_options.map((opt, i) => (
+                              <li key={i}>{opt}</li>
                             ))}
                           </ul>
                         </>
@@ -296,8 +305,10 @@ export default function Chatbot() {
 
                       {msg.text.content.next_steps?.length > 0 && (
                         <>
-                          <p className="font-semibold mt-2 text-sm">Next Steps</p>
-                          <ul className="list-disc ml-4 text-sm">
+                          <p className="font-semibold mt-2 text-sm">
+                            Next Steps
+                          </p>
+                          <ul className="list-disc ml-5 text-sm">
                             {msg.text.content.next_steps.map((step, i) => (
                               <li key={i}>{step}</li>
                             ))}
@@ -305,14 +316,12 @@ export default function Chatbot() {
                         </>
                       )}
 
-                      <p className="text-xs mt-2 italic opacity-70">
+                      <p className="text-xs mt-3 italic opacity-70">
                         {msg.text.content.note}
                       </p>
                     </>
                   ) : (
-                    <p className="text-sm leading-relaxed">
-                      {msg.text?.content}
-                    </p>
+                    <p className="text-sm">{msg.text?.content}</p>
                   )}
                 </div>
 
@@ -326,10 +335,10 @@ export default function Chatbot() {
 
             {isTyping && (
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 text-[#1E3A8A]">
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
                   ⚖️
                 </div>
-                <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-blue-100">
+                <div className="bg-white px-4 py-2 rounded-2xl border">
                   <span className="animate-pulse">...</span>
                 </div>
               </div>
@@ -339,10 +348,10 @@ export default function Chatbot() {
           </div>
 
           {/* INPUT */}
-          <div className="bg-white/80 backdrop-blur-lg border-t border-blue-100 px-4 py-3 flex items-center gap-3 rounded-b-2xl">
+          <div className="bg-white/80 backdrop-blur-lg border-t px-4 py-3 flex gap-3">
 
             <textarea
-              className="flex-1 resize-none rounded-full border border-blue-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
+              className="flex-1 resize-none rounded-full border px-4 py-2 focus:ring-2 focus:ring-blue-300"
               placeholder="Describe your legal issue..."
               rows={1}
               value={input}
@@ -358,7 +367,7 @@ export default function Chatbot() {
             <button
               onClick={sendMessage}
               disabled={!input.trim() || isTyping}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1E3A8A] text-white hover:bg-[#1D4ED8] transition disabled:opacity-50"
+              className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white"
             >
               ➤
             </button>
