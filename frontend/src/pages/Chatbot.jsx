@@ -132,7 +132,7 @@ export default function Chatbot() {
     }
   };
 
-  // UPDATE TITLE
+  // UPDATE TITLE (MANUAL)
   const updateTitle = async () => {
     if (!conversationId) return;
 
@@ -183,7 +183,7 @@ export default function Chatbot() {
 
     await saveMessage("user", userPayload);
 
-    // 🔥 AI TITLE GENERATION (ONLY FIRST MESSAGE)
+    // ✅ AI TITLE GENERATION (FIRST MESSAGE ONLY)
     if (
       title === "New Legal Consultation" ||
       title === "Legal Consultation"
@@ -309,6 +309,7 @@ export default function Chatbot() {
                   msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
+
                 {msg.sender === "bot" && (
                   <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
                     ⚖️
@@ -322,7 +323,67 @@ export default function Chatbot() {
                       : "bg-white border border-blue-100 text-[#1E3A8A]"
                   }`}
                 >
-                  <p className="text-sm">{msg.text?.content}</p>
+
+                  {/* ✅ STRUCTURED RENDERING RESTORED */}
+                  {msg.text?.type === "structured" ? (
+                    <>
+                      <p className="font-semibold mb-2">Summary</p>
+                      <p className="mb-3 text-sm">
+                        {msg.text.content.summary}
+                      </p>
+
+                      {msg.text.content.applicable_laws?.length > 0 && (
+                        <>
+                          <p className="font-semibold mt-2 text-sm">
+                            Applicable Laws
+                          </p>
+                          <ul className="list-disc ml-5 text-sm">
+                            {msg.text.content.applicable_laws.map((law, i) => (
+                              <li key={i}>
+                                {law.description}
+                                <span className="text-xs text-gray-500">
+                                  {" "}({law.law} → {law.bns_equivalent})
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+
+                      {msg.text.content.legal_options?.length > 0 && (
+                        <>
+                          <p className="font-semibold mt-2 text-sm">
+                            Legal Options
+                          </p>
+                          <ul className="list-disc ml-5 text-sm">
+                            {msg.text.content.legal_options.map((opt, i) => (
+                              <li key={i}>{opt}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+
+                      {msg.text.content.next_steps?.length > 0 && (
+                        <>
+                          <p className="font-semibold mt-2 text-sm">
+                            Next Steps
+                          </p>
+                          <ul className="list-disc ml-5 text-sm">
+                            {msg.text.content.next_steps.map((step, i) => (
+                              <li key={i}>{step}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+
+                      <p className="text-xs mt-3 italic opacity-70">
+                        {msg.text.content.note}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm">{msg.text?.content}</p>
+                  )}
+
                 </div>
 
                 {msg.sender === "user" && (
@@ -330,6 +391,7 @@ export default function Chatbot() {
                     👤
                   </div>
                 )}
+
               </div>
             ))}
 
