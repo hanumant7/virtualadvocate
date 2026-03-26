@@ -28,10 +28,12 @@ export default function Chatbot() {
 
   const chatEndRef = useRef(null);
 
+  // AUTO SCROLL
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  // LOAD / CREATE CONVERSATION
   useEffect(() => {
     if (location.state?.conversationId) {
       setConversationId(location.state.conversationId);
@@ -41,10 +43,12 @@ export default function Chatbot() {
     }
   }, [location.state]);
 
+  // HIDE BOTPRESS
   useEffect(() => {
     hideBotpress();
   }, []);
 
+  // LOAD MESSAGES
   const loadMessages = async (conversationId) => {
     try {
       const conversationRef = doc(db, "conversations", conversationId);
@@ -68,6 +72,7 @@ export default function Chatbot() {
     }
   };
 
+  // CREATE CONVERSATION
   const createConversation = async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -105,6 +110,7 @@ export default function Chatbot() {
     }
   };
 
+  // SAVE MESSAGE
   const saveMessage = async (sender, text) => {
     if (!conversationId) return;
 
@@ -126,6 +132,7 @@ export default function Chatbot() {
     }
   };
 
+  // UPDATE TITLE
   const updateTitle = async () => {
     if (!conversationId) return;
 
@@ -140,6 +147,7 @@ export default function Chatbot() {
     }
   };
 
+  // BUILD HISTORY
   const buildHistory = (msgs) => {
     return msgs.slice(-12).map((m) => ({
       role: m.sender === "user" ? "user" : "assistant",
@@ -150,6 +158,7 @@ export default function Chatbot() {
     }));
   };
 
+  // SEND MESSAGE
   const sendMessage = async () => {
     if (!input.trim() || !conversationId) return;
 
@@ -173,6 +182,38 @@ export default function Chatbot() {
     setIsTyping(true);
 
     await saveMessage("user", userPayload);
+
+    // 🔥 AI TITLE GENERATION (ONLY FIRST MESSAGE)
+    if (
+      title === "New Legal Consultation" ||
+      title === "Legal Consultation"
+    ) {
+      try {
+        const res = await fetch(
+          "https://virtualadvocate-production.up.railway.app/generate-title",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              message: userMessage,
+              user_id: user.uid,
+            }),
+          }
+        );
+
+        const data = await res.json();
+
+        setTitle(data.title);
+
+        await updateDoc(doc(db, "conversations", conversationId), {
+          title: data.title,
+        });
+      } catch (error) {
+        console.error("AI title generation failed:", error);
+      }
+    }
 
     try {
       const response = await fetch(
@@ -234,9 +275,28 @@ export default function Chatbot() {
 
           {/* HEADER */}
           <div className="bg-white/70 backdrop-blur-lg border border-blue-100 shadow-md rounded-t-2xl px-6 py-4">
-            <h2 className="font-bold text-xl text-[#1E3A8A]">
-              ⚖️ {title}
-            </h2>
+
+            {editingTitle ? (
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={updateTitle}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") updateTitle();
+                }}
+                className="font-bold text-xl text-[#1E3A8A] border-b outline-none bg-transparent"
+                autoFocus
+              />
+            ) : (
+              <h2
+                className="font-bold text-xl text-[#1E3A8A] cursor-pointer"
+                onClick={() => setEditingTitle(true)}
+                title="Click to rename"
+              >
+                ⚖️ {title}
+              </h2>
+            )}
+
           </div>
 
           {/* CHAT AREA */}
@@ -249,7 +309,6 @@ export default function Chatbot() {
                   msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-
                 {msg.sender === "bot" && (
                   <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
                     ⚖️
@@ -263,66 +322,7 @@ export default function Chatbot() {
                       : "bg-white border border-blue-100 text-[#1E3A8A]"
                   }`}
                 >
-
-                  {msg.text?.type === "structured" ? (
-                    <>
-                      <p className="font-semibold mb-2">Summary</p>
-                      <p className="mb-3 text-sm">
-                        {msg.text.content.summary}
-                      </p>
-
-                      {msg.text.content.applicable_laws?.length > 0 && (
-                        <>
-                          <p className="font-semibold mt-2 text-sm">
-                            Applicable Laws
-                          </p>
-                          <ul className="list-disc ml-5 text-sm">
-                            {msg.text.content.applicable_laws.map((law, i) => (
-                              <li key={i}>
-                                {law.description}
-                                <span className="text-xs text-gray-500">
-                                  {" "}
-                                  ({law.law} → {law.bns_equivalent})
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
-                      {msg.text.content.legal_options?.length > 0 && (
-                        <>
-                          <p className="font-semibold mt-2 text-sm">
-                            Legal Options
-                          </p>
-                          <ul className="list-disc ml-5 text-sm">
-                            {msg.text.content.legal_options.map((opt, i) => (
-                              <li key={i}>{opt}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
-                      {msg.text.content.next_steps?.length > 0 && (
-                        <>
-                          <p className="font-semibold mt-2 text-sm">
-                            Next Steps
-                          </p>
-                          <ul className="list-disc ml-5 text-sm">
-                            {msg.text.content.next_steps.map((step, i) => (
-                              <li key={i}>{step}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
-                      <p className="text-xs mt-3 italic opacity-70">
-                        {msg.text.content.note}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-sm">{msg.text?.content}</p>
-                  )}
+                  <p className="text-sm">{msg.text?.content}</p>
                 </div>
 
                 {msg.sender === "user" && (
@@ -371,6 +371,7 @@ export default function Chatbot() {
             >
               ➤
             </button>
+
           </div>
 
         </div>
